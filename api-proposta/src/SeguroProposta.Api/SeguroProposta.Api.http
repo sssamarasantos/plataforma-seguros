@@ -1,0 +1,6 @@
+@SeguroProposta.Api_HostAddress = http://localhost:5190
+
+GET {{SeguroProposta.Api_HostAddress}}/Proposta
+Accept: application/json
+
+###

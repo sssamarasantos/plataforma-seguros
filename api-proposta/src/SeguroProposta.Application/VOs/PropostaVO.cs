@@ -1,0 +1,15 @@
+﻿using SeguroProposta.Domain.Enums;
+
+namespace SeguroProposta.Application.VOs
+{
+    public class PropostaVO
+    {
+        public int NumeroProposta { get; set; }
+        public StatusProposta Status { get; set; }
+        public DateTime DataInclusao { get; set; }
+        public string Titulo { get; set; }
+        public string Descricao { get; set; }
+        public decimal ValorPremio { get; set; }
+        public decimal ValorCobertura { get; set; }
+    }
+}

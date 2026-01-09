@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SeguroProposta.Api/SeguroProposta.Api.csproj" />
+  <Project Path="SeguroProposta.Application/SeguroProposta.Application.csproj" />
+  <Project Path="SeguroProposta.Domain/SeguroProposta.Domain.csproj" />
+  <Project Path="SeguroProposta.Infraestructure/SeguroProposta.Infraestructure.csproj" />
+  <Project Path="SeguroProposta.Test/SeguroProposta.Test.csproj" />
+</Solution>
