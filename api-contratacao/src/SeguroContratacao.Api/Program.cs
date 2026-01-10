@@ -3,6 +3,8 @@ using SeguroContratacao.Api.Middlewares;
 using SeguroContratacao.Application;
 using SeguroContratacao.Infrastructure;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +12,24 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationModuleDependecy();
 builder.Services.AddInfrastructureModuleDependency();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
+static void ConfigureJsonOptions(JsonSerializerOptions options)
+{
+    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.WriteIndented = false;
+    options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+}
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    ConfigureJsonOptions(options.SerializerOptions);
+});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        ConfigureJsonOptions(options.JsonSerializerOptions);
+    });
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo

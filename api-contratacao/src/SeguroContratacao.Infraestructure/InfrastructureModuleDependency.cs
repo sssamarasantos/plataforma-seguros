@@ -11,13 +11,13 @@ namespace SeguroContratacao.Infrastructure
 {
     public static class InfrastructureModuleDependency
     {
-        public static async Task AddInfrastructureModuleDependency(this IServiceCollection services)
+        public static void AddInfrastructureModuleDependency(this IServiceCollection services)
         {
             string connectionString;
 
             using (var secretsManager = new SecretsManager())
             {
-                connectionString = await secretsManager.ObterAsync("API-CONTRATACAO-CONEXAO");
+                connectionString =  secretsManager.ObterAsync("API-CONTRATACAO-CONEXAO").GetAwaiter().GetResult();
             }
 
             services.AddSingleton(new DbConnectionStringBuilder

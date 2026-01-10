@@ -60,7 +60,7 @@ namespace SeguroContratacao.Domain.Models
 
         private static void ValidarValorCoberturaFinal(decimal valorPremioFinal, decimal valorCoberturaFinal)
         {
-            if (valorCoberturaFinal < valorPremioFinal)
+            if (valorCoberturaFinal <= valorPremioFinal)
                 throw new ContratacaoInvalidaException("Valor da cobertura deve ser maior que o prêmio.");
         }
     }
