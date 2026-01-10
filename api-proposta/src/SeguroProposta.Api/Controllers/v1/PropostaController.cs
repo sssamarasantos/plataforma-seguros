@@ -33,6 +33,20 @@ namespace SeguroProposta.Api.Controllers.v1
         }
 
         /// <summary>
+        /// Recupera uma proposta pelo seu identificador único..
+        /// </summary>
+        /// <param name="id">O identificador único da proposta a ser recuperada.</param>
+        /// <returns>Um <see cref="PropostaVO"/> representando a proposta com o identificador especificado, ou <c>null</c> se nenhuma
+        /// proposta for encontrada.</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(PropostaVO))]
+        public async Task<PropostaVO?> BuscarPorId([FromRoute] int id)
+        {
+            var proposta = await _propostaService.BuscarPorIdAsync(id);
+            return proposta;
+        }
+
+        /// <summary>
         /// Criação de proposta
         /// </summary>
         /// <param name="proposta"></param>

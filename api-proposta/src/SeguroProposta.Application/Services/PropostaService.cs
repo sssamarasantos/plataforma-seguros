@@ -23,6 +23,12 @@ namespace SeguroProposta.Application.Services
             return propostas.Select(p => p.ToVO());
         }
 
+        public async Task<PropostaVO?> BuscarPorIdAsync(int id)
+        {
+            var proposta = await _propostaRepository.BuscarPorIdAsync(id);
+            return proposta?.ToVO();
+        }
+
         public async Task InserirAsync(PropostaDTO propostaDto)
         {
             ArgumentNullException.ThrowIfNull(propostaDto);
@@ -36,16 +42,16 @@ namespace SeguroProposta.Application.Services
         {
             ArgumentNullException.ThrowIfNull(alteraStatusDto);
 
-            var proposta = await _propostaRepository.BuscarPorNumeroPropostaAsync(alteraStatusDto.NumeroProposta);
+            var proposta = await _propostaRepository.BuscarPorIdAsync(alteraStatusDto.Id);
             
             if (proposta is null)
             {
-                throw new InvalidOperationException($"Proposta com número {alteraStatusDto.NumeroProposta} não encontrada.");
+                throw new InvalidOperationException($"Proposta com número {alteraStatusDto.Id} não encontrada.");
             }
 
             proposta.AlterarStatus(alteraStatusDto.Status);
 
-            await _propostaRepository.AtualizaStatusAsync(alteraStatusDto.NumeroProposta, proposta.Status);
+            await _propostaRepository.AtualizaStatusAsync(proposta.Id, proposta.Status);
         }
     }
 }

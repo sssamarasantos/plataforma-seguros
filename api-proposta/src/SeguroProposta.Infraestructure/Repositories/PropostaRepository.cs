@@ -23,15 +23,15 @@ namespace SeguroProposta.Infraestructure.Repositories
 
             const string query = @"
                 INSERT INTO PROPOSTA (
-                    ID
+                    NUMERO_PROPOSTA
                     , STATUS 
                     , TITULO 
                     , DESCRICAO 
-                    , DATA_INCLUSAO
+                    , DATA_INCLUSAO         
                     , VALOR_PREMIO
                     , VALOR_COBERTURA)
                 VALUES (
-                    @Id
+                    @NumeroProposta
                     , @Status
                     , @Titulo
                     , @Descricao
@@ -39,18 +39,18 @@ namespace SeguroProposta.Infraestructure.Repositories
                     , @ValorPremio
                     , @ValorCobertura)";
 
-            var dynamicParameters = new DynamicParameters();
-            dynamicParameters.Add("@Id", proposta.Id, DbType.Guid);
-            dynamicParameters.Add("@Status", proposta.Status.ToString(), DbType.String, size: 15);
-            dynamicParameters.Add("@Titulo", proposta.Titulo, DbType.String, size: 100);
-            dynamicParameters.Add("@Descricao", proposta.Descricao, DbType.String, size: 255);
-            dynamicParameters.Add("@DataInclusao", proposta.DataInclusao, dbType: DbType.DateTime);
-            dynamicParameters.Add("@ValorPremio", proposta.ValorPremio, DbType.Decimal);
-            dynamicParameters.Add("@ValorCobertura", proposta.ValorCobertura, DbType.Decimal);
+            var parametros = new DynamicParameters();
+            parametros.Add("@NumeroProposta", proposta.NumeroProposta, DbType.String, size: 30);
+            parametros.Add("@Status", proposta.Status.ToString(), DbType.String, size: 15);
+            parametros.Add("@Titulo", proposta.Titulo, DbType.String, size: 100);
+            parametros.Add("@Descricao", proposta.Descricao, DbType.String, size: 255);
+            parametros.Add("@DataInclusao", proposta.DataInclusao, dbType: DbType.DateTime2);
+            parametros.Add("@ValorPremio", proposta.ValorPremio, DbType.Decimal);
+            parametros.Add("@ValorCobertura", proposta.ValorCobertura, DbType.Decimal);
 
             using var connection = _connectionFactory.CreateConnection();
 
-            await connection.ExecuteAsync(query, param: dynamicParameters, commandType: CommandType.Text);
+            await connection.ExecuteAsync(query, param: parametros, commandType: CommandType.Text);
         }
 
         public async Task<IEnumerable<Proposta>> BuscarTodasAsync()
@@ -72,12 +72,23 @@ namespace SeguroProposta.Infraestructure.Repositories
             return propostas;
         }
 
-        public async Task<Proposta?> BuscarPorNumeroPropostaAsync(int numeroProposta)
+        public async Task<Proposta?> BuscarPorIdAsync(int id)
         {
-            const string query = "SELECT Status FROM PROPOSTA WHERE NUMERO_PROPOSTA = @NumeroProposta";
+            const string query = @"
+                SELECT 
+                    ID as Id
+                    , NUMERO_PROPOSTA as NumeroProposta
+                    , STATUS as Status
+                    , TITULO as Titulo
+                    , DESCRICAO as Descricao
+                    , DATA_INCLUSAO as DataInclusao
+                    , VALOR_PREMIO as ValorPremio
+                    , VALOR_COBERTURA as ValorCobertura 
+                FROM PROPOSTA 
+                WHERE ID = @Id";
             
             var parametros = new DynamicParameters();
-            parametros.Add("@NumeroProposta", numeroProposta, DbType.String);
+            parametros.Add("@Id", id, DbType.Int32);
             
             using var connection = _connectionFactory.CreateConnection();
             
@@ -85,13 +96,13 @@ namespace SeguroProposta.Infraestructure.Repositories
             return proposta;
         }
 
-        public async Task AtualizaStatusAsync(int numeroProposta, StatusProposta statusProposta)
+        public async Task AtualizaStatusAsync(int id, StatusProposta statusProposta)
         {
-            const string query = "UPDATE PROPOSTA SET STATUS = @Status WHERE NUMERO_PROPOSTA = @NumeroProposta";
+            const string query = "UPDATE PROPOSTA SET STATUS = @Status WHERE ID = @Id";
 
             var parametros = new DynamicParameters();
             parametros.Add("@Status", statusProposta.ToString(), DbType.String, size: 15);
-            parametros.Add("@NumeroProposta", numeroProposta, DbType.Int32);
+            parametros.Add("@Id", id, DbType.Int32);
 
             using var connection = _connectionFactory.CreateConnection();
 

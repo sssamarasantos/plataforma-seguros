@@ -18,6 +18,7 @@ namespace SeguroProposta.Application.Mappers
             
             return new PropostaVO
             {
+                Id = proposta.Id,
                 NumeroProposta = proposta.NumeroProposta,
                 Status = proposta.Status,
                 DataInclusao = proposta.DataInclusao,

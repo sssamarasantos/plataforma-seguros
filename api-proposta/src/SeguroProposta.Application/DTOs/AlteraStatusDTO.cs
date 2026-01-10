@@ -5,7 +5,7 @@ namespace SeguroProposta.Application.Dtos
 {
     public class AlteraStatusDTO
     {
-        public int NumeroProposta { get; set; }
+        public int Id { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public StatusProposta Status { get; set; }

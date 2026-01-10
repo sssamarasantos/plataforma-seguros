@@ -7,7 +7,7 @@ namespace SeguroProposta.Domain.Interfaces
     {
         Task InserirAsync(Proposta proposta);
         Task<IEnumerable<Proposta>> BuscarTodasAsync();
-        Task<Proposta?> BuscarPorNumeroPropostaAsync(int numeroProposta);
-        Task AtualizaStatusAsync(int numeroProposta, StatusProposta statusProposta);
+        Task<Proposta?> BuscarPorIdAsync(int id);
+        Task AtualizaStatusAsync(int id, StatusProposta statusProposta);
     }
 }
