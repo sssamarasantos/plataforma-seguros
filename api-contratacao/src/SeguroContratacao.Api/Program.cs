@@ -1,13 +1,13 @@
 using Microsoft.OpenApi.Models;
-using SeguroProposta.Application;
-using SeguroProposta.Infraestructure;
+using SeguroContratacao.Application;
+using SeguroContratacao.Infraestructure;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddApplicationModuleDependency();
-builder.Services.AddInfraestrureModuleDependency();
+builder.Services.AddApplicationModuleDependecy();
+builder.Services.AddInfraestructureModuleDependency();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -18,7 +18,7 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "Proposta API",
+        Title = "Contratacao API",
         Description = "API para controle de propostas"
     });
 

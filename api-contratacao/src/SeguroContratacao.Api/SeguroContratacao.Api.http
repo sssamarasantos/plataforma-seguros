@@ -1,0 +1,11 @@
+@SeguroContratacao.Api_HostAddress = http://localhost:5156
+
+POST {{SeguroContratacao.Api_HostAddress}}/api/v1/contratacao
+Accept: application/json
+Content-Type: application/json
+{
+  "idProposta": 1,
+  "valorPremioFinal": 1500.00,
+  "valorCoberturaFinal": 2000.00
+}
+###

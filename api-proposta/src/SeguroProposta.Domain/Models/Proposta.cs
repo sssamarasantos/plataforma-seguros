@@ -9,7 +9,7 @@ namespace SeguroProposta.Domain.Models
         public StatusProposta Status { get; private set; }
         public string Titulo { get; private set; }
         public string Descricao { get; private set; }
-        public DateTime DataInclusao { get; private set; }
+        public DateTime DataHoraInclusao { get; private set; }
         public decimal ValorPremio { get; private set; }
         public decimal ValorCobertura { get; private set; }
 
@@ -19,14 +19,18 @@ namespace SeguroProposta.Domain.Models
 
         public Proposta(string titulo, string descricao, decimal valorPremio, decimal valorCobertura)
         {
-            //Id = Guid.NewGuid();
-            NumeroProposta = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10).ToUpper();
+            NumeroProposta = GerarNumeroProposta();
             Status = StatusProposta.EmAnalise;
-            DataInclusao = DateTime.UtcNow;
+            DataHoraInclusao = DateTime.UtcNow;
             Titulo = titulo ?? throw new ArgumentNullException(titulo);
             Descricao = descricao ?? string.Empty;
             ValorPremio = valorPremio;
             ValorCobertura = valorCobertura;
+        }
+
+        internal static string GerarNumeroProposta()
+        {
+            return Guid.NewGuid().ToString().Replace("-", "").ToUpper().Substring(0, 10);
         }
 
         public void AlterarStatus(StatusProposta novoStatus)

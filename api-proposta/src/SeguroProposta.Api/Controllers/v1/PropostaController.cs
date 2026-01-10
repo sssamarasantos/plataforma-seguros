@@ -2,7 +2,6 @@
 using SeguroProposta.Application.Dtos;
 using SeguroProposta.Application.Interfaces;
 using SeguroProposta.Application.VOs;
-using System.Net;
 
 namespace SeguroProposta.Api.Controllers.v1
 {
@@ -25,7 +24,7 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <returns>Uma coleção de objetos <see cref="PropostaVO"/> representando todas as propostas. A coleção está vazia se nenhuma
         /// proposta for encontrada.</returns>
         [HttpGet]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<PropostaVO>))]
+        [ProducesResponseType(typeof(IEnumerable<PropostaVO>), StatusCodes.Status200OK)]
         public async Task<IEnumerable<PropostaVO>> BuscarTodas()
         {
             var propostas = await _propostaService.BuscarTodasAsync();
@@ -39,7 +38,7 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <returns>Um <see cref="PropostaVO"/> representando a proposta com o identificador especificado, ou <c>null</c> se nenhuma
         /// proposta for encontrada.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(PropostaVO))]
+        [ProducesResponseType(typeof(PropostaVO), StatusCodes.Status200OK)]
         public async Task<PropostaVO?> BuscarPorId([FromRoute] int id)
         {
             var proposta = await _propostaService.BuscarPorIdAsync(id);
@@ -52,7 +51,7 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <param name="proposta"></param>
         /// <returns>Retorna uma resposta HTTP 201 Created se for criado com sucesso</returns>
         [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> Inserir(PropostaDTO proposta)
         {
             await _propostaService.InserirAsync(proposta);
@@ -65,7 +64,7 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <param name="alteraStatusDTO">An object containing the information required to alter the status of the proposal. Cannot be null.</param>
         /// <returns>Retorna uma resposta HTTP 200 OK se o status for atualizado com sucesso</returns>
         [HttpPatch]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> AlterarStatus(AlteraStatusDTO alteraStatusDTO)
         {
             await _propostaService.AlterarStatusAsync(alteraStatusDTO);

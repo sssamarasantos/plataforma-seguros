@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SeguroContratacao.Api/SeguroContratacao.Api.csproj" />
+  <Project Path="SeguroContratacao.Application/SeguroContratacao.Application.csproj" />
+  <Project Path="SeguroContratacao.Domain/SeguroContratacao.Domain.csproj" />
+  <Project Path="SeguroContratacao.Infraestructure/SeguroContratacao.Infraestructure.csproj" />
+  <Project Path="SeguroContratacao.Test/SeguroContratacao.Test.csproj" />
+</Solution>

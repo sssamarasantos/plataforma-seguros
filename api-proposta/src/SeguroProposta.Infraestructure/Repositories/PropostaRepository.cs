@@ -27,7 +27,7 @@ namespace SeguroProposta.Infraestructure.Repositories
                     , STATUS 
                     , TITULO 
                     , DESCRICAO 
-                    , DATA_INCLUSAO         
+                    , DATAHORA_INCLUSAO         
                     , VALOR_PREMIO
                     , VALOR_COBERTURA)
                 VALUES (
@@ -44,7 +44,7 @@ namespace SeguroProposta.Infraestructure.Repositories
             parametros.Add("@Status", proposta.Status.ToString(), DbType.String, size: 15);
             parametros.Add("@Titulo", proposta.Titulo, DbType.String, size: 100);
             parametros.Add("@Descricao", proposta.Descricao, DbType.String, size: 255);
-            parametros.Add("@DataInclusao", proposta.DataInclusao, dbType: DbType.DateTime2);
+            parametros.Add("@DataHoraInclusao", proposta.DataHoraInclusao, dbType: DbType.DateTime2);
             parametros.Add("@ValorPremio", proposta.ValorPremio, DbType.Decimal);
             parametros.Add("@ValorCobertura", proposta.ValorCobertura, DbType.Decimal);
 
@@ -61,7 +61,7 @@ namespace SeguroProposta.Infraestructure.Repositories
                     , STATUS as Status
                     , TITULO as Titulo
                     , DESCRICAO as Descricao
-                    , DATA_INCLUSAO as DataInclusao
+                    , DATAHORA_INCLUSAO as DataInclusao
                     , VALOR_PREMIO as ValorPremio
                     , VALOR_COBERTURA as ValorCobertura
                 FROM PROPOSTA";
@@ -81,7 +81,7 @@ namespace SeguroProposta.Infraestructure.Repositories
                     , STATUS as Status
                     , TITULO as Titulo
                     , DESCRICAO as Descricao
-                    , DATA_INCLUSAO as DataInclusao
+                    , DATAHORA_INCLUSAO as DataInclusao
                     , VALOR_PREMIO as ValorPremio
                     , VALOR_COBERTURA as ValorCobertura 
                 FROM PROPOSTA 

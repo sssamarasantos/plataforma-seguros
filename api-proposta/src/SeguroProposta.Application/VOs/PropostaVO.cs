@@ -9,7 +9,7 @@ namespace SeguroProposta.Application.VOs
         public StatusProposta Status { get; set; }
         public string Titulo { get; set; }
         public string Descricao { get; set; }
-        public DateTime DataInclusao { get; set; }
+        public DateTime DataHoraInclusao { get; set; }
         public decimal ValorPremio { get; set; }
         public decimal ValorCobertura { get; set; }
     }

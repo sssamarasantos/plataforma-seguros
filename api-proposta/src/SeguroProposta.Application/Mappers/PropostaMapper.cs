@@ -8,14 +8,14 @@ namespace SeguroProposta.Application.Mappers
     {
         public static Proposta ToDomain(this PropostaDTO dto)
         {
-            if (dto is null) throw new ArgumentNullException(nameof(dto));
+            ArgumentNullException.ThrowIfNull(dto);
             return new Proposta(dto.Titulo, dto.Descricao, dto.ValorPremio, dto.ValorCobertura);
         }
 
         public static PropostaVO ToVO(this Proposta proposta)
         {
-            if (proposta is null) throw new ArgumentNullException(nameof(proposta));
-            
+            ArgumentNullException.ThrowIfNull(proposta);
+
             return new PropostaVO
             {
                 Id = proposta.Id,
