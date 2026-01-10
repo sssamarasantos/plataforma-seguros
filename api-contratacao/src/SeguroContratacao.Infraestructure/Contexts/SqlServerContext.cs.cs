@@ -1,9 +1,9 @@
 ﻿using Microsoft.Data.SqlClient;
-using SeguroContratacao.Infraestructure.Interfaces;
+using SeguroContratacao.Infrastructure.Interfaces;
 using System.Data;
 using System.Data.Common;
 
-namespace SeguroContratacao.Infraestructure.Contexts
+namespace SeguroContratacao.Infrastructure.Contexts
 {
     public class SqlServerContext : IDbContextFactory
     {

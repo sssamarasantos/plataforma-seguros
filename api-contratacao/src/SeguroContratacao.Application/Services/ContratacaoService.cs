@@ -1,7 +1,7 @@
 ﻿using SeguroContratacao.Application.DTOs;
 using SeguroContratacao.Application.Interfaces;
-using SeguroContratacao.Application.Mappers;
 using SeguroContratacao.Domain.Interfaces;
+using SeguroContratacao.Domain.Models;
 
 namespace SeguroContratacao.Application.Services
 {
@@ -20,9 +20,13 @@ namespace SeguroContratacao.Application.Services
         {
             var proposta = await _propostaApi.ObterPropostaPorIdAsync(contratacaoDto.IdProposta);
 
-            var novaContratacao = contratacaoDto.ToDomain();
-            novaContratacao.ValidarStatus(proposta.Status);
-            novaContratacao.FinalizarContratacao();
+            Contratacao.ValidarStatus(proposta.Status);
+
+            var novaContratacao = Contratacao.Criar(
+                contratacaoDto.IdProposta,
+                contratacaoDto.ValorPremioFinal,
+                contratacaoDto.ValorCoberturaFinal
+            );
 
             var id = await _contratacaoRepository.InserirAsync(novaContratacao);
             return id;

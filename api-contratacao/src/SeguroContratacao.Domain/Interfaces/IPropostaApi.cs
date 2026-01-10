@@ -1,9 +1,9 @@
-﻿using SeguroContratacao.Domain.DTOs;
+﻿using SeguroContratacao.Domain.Models;
 
 namespace SeguroContratacao.Domain.Interfaces
 {
     public interface IPropostaApi
     {
-        Task<PropostaDTO> ObterPropostaPorIdAsync(int idProposta);
+        Task<Proposta> ObterPropostaPorIdAsync(int idProposta);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SeguroContratacao.Domain.Enums;
+using SeguroContratacao.Domain.Exceptions;
 
 namespace SeguroContratacao.Domain.Models
 {
@@ -16,50 +17,51 @@ namespace SeguroContratacao.Domain.Models
 
         public decimal ValorCoberturaFinal { get; private set; }
 
-        public Contratacao()
+        protected Contratacao() {}
+
+        private Contratacao(int idProposta, decimal valorPremioFinal, decimal valorCoberturaFinal)
         {
-
-        }
-
-        public Contratacao(int idProposta, decimal valorPremioFinal, decimal valorCoberturaFinal)
-        {
-            if (idProposta == 0)
-            {
-                throw new ArgumentException("O ID da proposta não pode ser zero.", nameof(idProposta));
-            }
-
-            if (valorPremioFinal <= 0)
-            {
-                throw new ArgumentException("O valor do prêmio final deve ser maior que zero.", nameof(valorPremioFinal));
-            }
-
-            if (valorCoberturaFinal <= 0)
-            {
-                throw new ArgumentException("O valor da cobertura final deve ser maior que zero.", nameof(valorCoberturaFinal));
-            }
-
             IdProposta = idProposta;
+            NumeroApolice = ValueObjects.NumeroApolice.Gerar();
+            DataHoraContratacao = DateTime.UtcNow;
+
             ValorPremioFinal = valorPremioFinal;
             ValorCoberturaFinal = valorCoberturaFinal;
         }
 
-        internal static string GerarNumeroApolice()
+        public static Contratacao Criar(int idProposta, decimal valorPremioFinal, decimal valorCoberturaFinal)
         {
-            return Guid.NewGuid().ToString().Replace("-", "").ToUpper().Substring(0, 10);
+            ValidarIdProposta(idProposta);
+            ValidarValorPremioFinal(valorPremioFinal);
+            ValidarValorCoberturaFinal(valorPremioFinal, valorCoberturaFinal);
+
+            return new Contratacao(idProposta, valorPremioFinal, valorCoberturaFinal);
         }
 
-        public void ValidarStatus(StatusProposta statusProposta)
+        public static void ValidarStatus(StatusProposta statusProposta)
         {
             if (statusProposta != StatusProposta.Aprovada)
             {
-                throw new InvalidOperationException("A proposta deve estar aprovada para finalizar a contratação.");
+                throw new RegraDeNegocioException("A proposta deve estar aprovada para finalizar a contratação.");
             }
         }
 
-        public void FinalizarContratacao()
+        private static void ValidarIdProposta(int idProposta)
         {
-            DataHoraContratacao = DateTime.UtcNow;
-            NumeroApolice = GerarNumeroApolice();
+            if (idProposta == 0)
+                throw new ContratacaoInvalidaException("O ID da proposta não pode ser zero.");
+        }
+
+        private static void ValidarValorPremioFinal(decimal valor)
+        {
+            if (valor <= 0)
+                throw new ContratacaoInvalidaException("Valor do prêmio deve ser maior que zero.");
+        }
+
+        private static void ValidarValorCoberturaFinal(decimal valorPremioFinal, decimal valorCoberturaFinal)
+        {
+            if (valorCoberturaFinal < valorPremioFinal)
+                throw new ContratacaoInvalidaException("Valor da cobertura deve ser maior que o prêmio.");
         }
     }
 }

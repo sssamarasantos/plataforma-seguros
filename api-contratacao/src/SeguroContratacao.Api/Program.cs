@@ -1,13 +1,14 @@
 using Microsoft.OpenApi.Models;
+using SeguroContratacao.Api.Middlewares;
 using SeguroContratacao.Application;
-using SeguroContratacao.Infraestructure;
+using SeguroContratacao.Infrastructure;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddApplicationModuleDependecy();
-builder.Services.AddInfraestructureModuleDependency();
+builder.Services.AddInfrastructureModuleDependency();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -34,6 +35,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

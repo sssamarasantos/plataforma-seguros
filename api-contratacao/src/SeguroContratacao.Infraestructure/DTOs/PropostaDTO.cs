@@ -1,7 +1,7 @@
 ﻿using SeguroContratacao.Domain.Enums;
 using System.Text.Json.Serialization;
 
-namespace SeguroContratacao.Domain.DTOs
+namespace SeguroContratacao.Infrastructure.DTOs
 {
     public class PropostaDTO
     {

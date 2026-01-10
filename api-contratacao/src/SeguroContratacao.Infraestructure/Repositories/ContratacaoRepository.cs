@@ -1,10 +1,10 @@
 ﻿using Dapper;
 using SeguroContratacao.Domain.Interfaces;
 using SeguroContratacao.Domain.Models;
-using SeguroContratacao.Infraestructure.Interfaces;
+using SeguroContratacao.Infrastructure.Interfaces;
 using System.Data;
 
-namespace SeguroContratacao.Infraestructure.Repositories
+namespace SeguroContratacao.Infrastructure.Repositories
 {
     public class ContratacaoRepository : IContratacaoRepository
     {
@@ -27,7 +27,7 @@ namespace SeguroContratacao.Infraestructure.Repositories
                     , VALOR_COBERTURA_FINAL)
                 VALUES (
                     @NumeroApolice
-                    , @DataContratacao
+                    , @DataHoraContratacao
                     , @IdProposta
                     , @ValorPremioFinal
                     , @valorCoberturaFinal)";
