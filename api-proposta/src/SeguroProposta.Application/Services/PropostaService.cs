@@ -1,7 +1,7 @@
 ﻿using SeguroProposta.Application.Dtos;
+using SeguroProposta.Application.DTOs;
 using SeguroProposta.Application.Interfaces;
 using SeguroProposta.Application.Mappers;
-using SeguroProposta.Application.VOs;
 using SeguroProposta.Domain.Interfaces;
 
 namespace SeguroProposta.Application.Services
@@ -16,20 +16,20 @@ namespace SeguroProposta.Application.Services
                 ?? throw new ArgumentNullException(nameof(propostaRepository));
         }
 
-        public async Task<IEnumerable<PropostaVO>> BuscarTodasAsync()
+        public async Task<IEnumerable<PropostaDTO>> BuscarTodasAsync()
         {
             var propostas = await _propostaRepository.BuscarTodasAsync();
 
-            return propostas.Select(p => p.ToVO());
+            return propostas.Select(p => p.ToDTO());
         }
 
-        public async Task<PropostaVO?> BuscarPorIdAsync(int id)
+        public async Task<PropostaDTO?> BuscarPorIdAsync(int id)
         {
             var proposta = await _propostaRepository.BuscarPorIdAsync(id);
-            return proposta?.ToVO();
+            return proposta?.ToDTO();
         }
 
-        public async Task InserirAsync(PropostaDTO propostaDto)
+        public async Task InserirAsync(CriaPropostaDTO propostaDto)
         {
             ArgumentNullException.ThrowIfNull(propostaDto);
 
@@ -43,7 +43,7 @@ namespace SeguroProposta.Application.Services
             ArgumentNullException.ThrowIfNull(alteraStatusDto);
 
             var proposta = await _propostaRepository.BuscarPorIdAsync(alteraStatusDto.Id);
-            
+
             if (proposta is null)
             {
                 throw new InvalidOperationException($"Proposta com número {alteraStatusDto.Id} não encontrada.");

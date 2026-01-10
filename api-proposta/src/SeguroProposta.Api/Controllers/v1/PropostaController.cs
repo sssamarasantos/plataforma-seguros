@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SeguroProposta.Application.Dtos;
+using SeguroProposta.Application.DTOs;
 using SeguroProposta.Application.Interfaces;
-using SeguroProposta.Application.VOs;
 
 namespace SeguroProposta.Api.Controllers.v1
 {
@@ -21,11 +21,11 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <summary>
         /// Retorna todas as propostas
         /// </summary>
-        /// <returns>Uma coleção de objetos <see cref="PropostaVO"/> representando todas as propostas. A coleção está vazia se nenhuma
+        /// <returns>Uma coleção de objetos <see cref="PropostaDTO"/> representando todas as propostas. A coleção está vazia se nenhuma
         /// proposta for encontrada.</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<PropostaVO>), StatusCodes.Status200OK)]
-        public async Task<IEnumerable<PropostaVO>> BuscarTodas()
+        [ProducesResponseType(typeof(IEnumerable<PropostaDTO>), StatusCodes.Status200OK)]
+        public async Task<IEnumerable<PropostaDTO>> BuscarTodas()
         {
             var propostas = await _propostaService.BuscarTodasAsync();
             return propostas;
@@ -35,11 +35,11 @@ namespace SeguroProposta.Api.Controllers.v1
         /// Recupera uma proposta pelo seu identificador único..
         /// </summary>
         /// <param name="id">O identificador único da proposta a ser recuperada.</param>
-        /// <returns>Um <see cref="PropostaVO"/> representando a proposta com o identificador especificado, ou <c>null</c> se nenhuma
+        /// <returns>Um <see cref="PropostaDTO"/> representando a proposta com o identificador especificado, ou <c>null</c> se nenhuma
         /// proposta for encontrada.</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(PropostaVO), StatusCodes.Status200OK)]
-        public async Task<PropostaVO?> BuscarPorId([FromRoute] int id)
+        [ProducesResponseType(typeof(PropostaDTO), StatusCodes.Status200OK)]
+        public async Task<PropostaDTO?> BuscarPorId([FromRoute] int id)
         {
             var proposta = await _propostaService.BuscarPorIdAsync(id);
             return proposta;
@@ -52,7 +52,7 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <returns>Retorna uma resposta HTTP 201 Created se for criado com sucesso</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> Inserir(PropostaDTO proposta)
+        public async Task<IActionResult> Inserir(CriaPropostaDTO proposta)
         {
             await _propostaService.InserirAsync(proposta);
             return Created();

@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using SeguroProposta.Api.Middlewares;
 using SeguroProposta.Application;
 using SeguroProposta.Infraestructure;
 using System.Reflection;
@@ -10,9 +11,7 @@ builder.Services.AddApplicationModuleDependency();
 builder.Services.AddInfraestrureModuleDependency();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -34,6 +33,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
