@@ -56,7 +56,6 @@ namespace SeguroProposta.Api.Middlewares
 
             var response = new
             {
-                statusCode = (int)statusCode,
                 message,
                 detail = context.Request.Path.ToString(),
                 timestamp = DateTime.UtcNow

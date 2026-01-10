@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace SeguroProposta.Infraestructure.Interfaces
+namespace SeguroProposta.Infrastructure.Interfaces
 {
     public interface IDbContextFactory
     {

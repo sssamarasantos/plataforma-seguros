@@ -2,10 +2,10 @@
 using SeguroProposta.Domain.Enums;
 using SeguroProposta.Domain.Interfaces;
 using SeguroProposta.Domain.Models;
-using SeguroProposta.Infraestructure.Interfaces;
+using SeguroProposta.Infrastructure.Interfaces;
 using System.Data;
 
-namespace SeguroProposta.Infraestructure.Repositories
+namespace SeguroProposta.Infrastructure.Repositories
 {
     public class PropostaRepository : IPropostaRepository
     {
@@ -35,7 +35,7 @@ namespace SeguroProposta.Infraestructure.Repositories
                     , @Status
                     , @Titulo
                     , @Descricao
-                    , @DataInclusao
+                    , @DataHoraInclusao
                     , @ValorPremio
                     , @ValorCobertura)";
 
@@ -61,7 +61,7 @@ namespace SeguroProposta.Infraestructure.Repositories
                     , STATUS as Status
                     , TITULO as Titulo
                     , DESCRICAO as Descricao
-                    , DATAHORA_INCLUSAO as DataInclusao
+                    , DATAHORA_INCLUSAO as DataHoraInclusao
                     , VALOR_PREMIO as ValorPremio
                     , VALOR_COBERTURA as ValorCobertura
                 FROM PROPOSTA";

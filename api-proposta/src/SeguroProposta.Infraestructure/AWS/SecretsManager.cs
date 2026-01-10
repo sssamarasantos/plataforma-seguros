@@ -2,7 +2,7 @@
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Extensions.Caching;
 
-namespace SeguroProposta.Infraestructure.AWS
+namespace SeguroProposta.Infrastructure.AWS
 {
     public sealed class SecretsManager : IDisposable
     {

@@ -1,7 +1,7 @@
 using Microsoft.OpenApi.Models;
 using SeguroProposta.Api.Middlewares;
 using SeguroProposta.Application;
-using SeguroProposta.Infraestructure;
+using SeguroProposta.Infrastructure;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);

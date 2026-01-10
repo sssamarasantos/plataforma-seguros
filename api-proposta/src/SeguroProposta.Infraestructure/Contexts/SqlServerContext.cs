@@ -1,9 +1,9 @@
 ﻿using Microsoft.Data.SqlClient;
-using SeguroProposta.Infraestructure.Interfaces;
+using SeguroProposta.Infrastructure.Interfaces;
 using System.Data;
 using System.Data.Common;
 
-namespace SeguroProposta.Infraestructure.Contexts
+namespace SeguroProposta.Infrastructure.Contexts
 {
     public sealed class SqlServerContext : IDbContextFactory
     {
