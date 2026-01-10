@@ -3,14 +3,33 @@ using SeguroProposta.Api.Middlewares;
 using SeguroProposta.Application;
 using SeguroProposta.Infrastructure;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddApplicationModuleDependency();
-builder.Services.AddInfraestrureModuleDependency();
+builder.Services.AddInfrastructureModuleDependency();
 
-builder.Services.AddControllers();
+// Método auxiliar para configurar opções JSON compartilhadas
+static void ConfigureJsonOptions(JsonSerializerOptions options)
+{
+    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.WriteIndented = false;
+    options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+}
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    ConfigureJsonOptions(options.SerializerOptions);
+});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        ConfigureJsonOptions(options.JsonSerializerOptions);
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

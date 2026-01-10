@@ -47,7 +47,6 @@ namespace SeguroProposta.Api.Middlewares
             if (statusCode == HttpStatusCode.InternalServerError)
             {
                 _logger.LogError(exception, "Erro não tratado: {Message}", exception.Message);
-                message = "Ocorreu um erro interno. Contate o suporte.";
             }
             else
             {
@@ -57,7 +56,6 @@ namespace SeguroProposta.Api.Middlewares
             var response = new
             {
                 message,
-                detail = context.Request.Path.ToString(),
                 timestamp = DateTime.UtcNow
             };
 

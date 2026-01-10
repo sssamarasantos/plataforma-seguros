@@ -7,16 +7,15 @@ namespace SeguroProposta.Infrastructure.AWS
     public sealed class SecretsManager : IDisposable
     {
         private readonly SecretsManagerCache _cache;
-        private static readonly Lazy<SecretsManager> _instance = new(() => new SecretsManager());
 
-        public static SecretsManager Instance => _instance.Value;
-
-        private SecretsManager()
+        public SecretsManager()
         {
+            var client = new AmazonSecretsManagerClient(RegionEndpoint.USEast1);
+
             var config = new SecretCacheConfiguration
             {
                 CacheItemTTL = 3600, // 1 hora 
-                Client = new AmazonSecretsManagerClient(RegionEndpoint.USEast1)
+                Client = client
             };
 
             _cache = new SecretsManagerCache(config);
