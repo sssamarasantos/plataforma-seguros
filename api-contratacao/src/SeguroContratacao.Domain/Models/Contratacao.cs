@@ -1,5 +1,5 @@
-﻿using SeguroContratacao.Domain.Enums;
-using SeguroContratacao.Domain.Exceptions;
+﻿using SeguroContratacao.Domain.Common;
+using SeguroContratacao.Domain.Enums;
 
 namespace SeguroContratacao.Domain.Models
 {
@@ -19,11 +19,11 @@ namespace SeguroContratacao.Domain.Models
 
         public string EmailContratante { get; private set; } = string.Empty;
 
-        protected Contratacao() {}
+        protected Contratacao() { }
 
         private Contratacao(
-            int idProposta, 
-            decimal valorPremioFinal, 
+            int idProposta,
+            decimal valorPremioFinal,
             decimal valorCoberturaFinal,
             string emailContratante)
         {
@@ -35,43 +35,59 @@ namespace SeguroContratacao.Domain.Models
             EmailContratante = emailContratante;
         }
 
-        public static Contratacao Criar(
-            int idProposta, 
-            decimal valorPremioFinal, 
+        public static ResultadoOperacao<Contratacao> Criar(
+            int idProposta,
+            decimal valorPremioFinal,
             decimal valorCoberturaFinal,
             string emailContratante)
         {
-            ValidarIdProposta(idProposta);
-            ValidarValorPremioFinal(valorPremioFinal);
-            ValidarValorCoberturaFinal(valorPremioFinal, valorCoberturaFinal);
+            var validacaoIdProposta = ValidarIdProposta(idProposta);
+            if (validacaoIdProposta.EhFalha)
+                return validacaoIdProposta.Erro!;
+
+            var validacaoValorPremio = ValidarValorPremioFinal(valorPremioFinal);
+            if (validacaoValorPremio.EhFalha)
+                return validacaoValorPremio.Erro!;
+
+            var validacaoValorCobertura = ValidarValorCoberturaFinal(valorPremioFinal, valorCoberturaFinal);
+            if (validacaoValorCobertura.EhFalha)
+                return validacaoValorCobertura.Erro!;
 
             return new Contratacao(idProposta, valorPremioFinal, valorCoberturaFinal, emailContratante);
         }
 
-        public static void ValidarStatus(StatusProposta statusProposta)
+        public static ResultadoOperacao ValidarStatus(StatusProposta statusProposta)
         {
             if (statusProposta != StatusProposta.Aprovada)
             {
-                throw new RegraDeNegocioException("A proposta deve estar aprovada para finalizar a contratação.");
+                return ErrosDomain.TituloObrigatorio;
             }
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private static void ValidarIdProposta(int idProposta)
+        private static ResultadoOperacao ValidarIdProposta(int idProposta)
         {
             if (idProposta == 0)
-                throw new ContratacaoInvalidaException("O ID da proposta não pode ser zero.");
+                return ErrosDomain.IdPropostaInvalido;
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private static void ValidarValorPremioFinal(decimal valor)
+        private static ResultadoOperacao ValidarValorPremioFinal(decimal valor)
         {
             if (valor <= 0)
-                throw new ContratacaoInvalidaException("Valor do prêmio deve ser maior que zero.");
+                return ErrosDomain.ValorPremioInvalido;
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private static void ValidarValorCoberturaFinal(decimal valorPremioFinal, decimal valorCoberturaFinal)
+        private static ResultadoOperacao ValidarValorCoberturaFinal(decimal valorPremioFinal, decimal valorCoberturaFinal)
         {
             if (valorCoberturaFinal <= valorPremioFinal)
-                throw new ContratacaoInvalidaException("Valor da cobertura deve ser maior que o prêmio.");
+                return ErrosDomain.ValorCoberturaInvalido;
+
+            return ResultadoOperacao.Sucesso();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SeguroContratacao.Api.Common;
 using SeguroContratacao.Application.DTOs;
 using SeguroContratacao.Application.Interfaces;
 
@@ -22,10 +23,10 @@ namespace SeguroContratacao.Api.Controllers
         /// <returns>Retorna o identificador único da contratação.</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> ContratarProposta(ContratacaoDTO contratacaoDto)
+        public async Task<OperacaoActionResult> ContratarProposta(ContratacaoDTO contratacaoDto)
         {
-            await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
-            return Ok();
+            var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
+            return resultado;
         }
     }
 }

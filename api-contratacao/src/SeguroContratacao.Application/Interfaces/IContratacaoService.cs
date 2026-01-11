@@ -1,9 +1,10 @@
 ﻿using SeguroContratacao.Application.DTOs;
+using SeguroContratacao.Domain.Common;
 
 namespace SeguroContratacao.Application.Interfaces
 {
     public interface IContratacaoService
     {
-        Task ContratarPropostaAsync(ContratacaoDTO contratacaoDto);
+        Task<ResultadoOperacao> ContratarPropostaAsync(ContratacaoDTO contratacaoDto);
     }
 }

@@ -1,5 +1,7 @@
-﻿using SeguroContratacao.Application.DTOs;
+﻿using SeguroContratacao.Application.Common;
+using SeguroContratacao.Application.DTOs;
 using SeguroContratacao.Application.Interfaces;
+using SeguroContratacao.Domain.Common;
 using SeguroContratacao.Domain.Interfaces;
 using SeguroContratacao.Domain.Models;
 
@@ -16,24 +18,39 @@ namespace SeguroContratacao.Application.Services
             _propostaApi = propostaApi;
         }
 
-        public async Task ContratarPropostaAsync(ContratacaoDTO contratacaoDto)
+        public async Task<ResultadoOperacao> ContratarPropostaAsync(ContratacaoDTO contratacaoDto)
         {
-            var proposta = await _propostaApi.ObterPropostaPorIdAsync(contratacaoDto.IdProposta);
+            var resultadoProposta = await _propostaApi.ObterPropostaPorIdAsync(contratacaoDto.IdProposta);
+            if (resultadoProposta.EhFalha)
+            {
+                return resultadoProposta.Erro!;
+            }
 
-            Contratacao.ValidarStatus(proposta.Status);
+            var validacaoStatus = Contratacao.ValidarStatus(resultadoProposta.Valor.Status);
+            if (validacaoStatus.EhFalha)
+            {
+                return validacaoStatus;
+            }
 
-            var novaContratacao = Contratacao.Criar(
+            var resultadoContratacao = Contratacao.Criar(
                 contratacaoDto.IdProposta,
                 contratacaoDto.ValorPremioFinal,
                 contratacaoDto.ValorCoberturaFinal,
-                proposta.EmailContratante
+                resultadoProposta.Valor.EmailContratante
             );
 
-            var sucesso = await _contratacaoRepository.InserirAsync(novaContratacao);
+            if (resultadoContratacao.EhFalha)
+            {
+                return resultadoContratacao.Erro!;
+            }
+
+            var sucesso = await _contratacaoRepository.InserirAsync(resultadoContratacao.Valor);
             if (!sucesso)
             {
-                throw new Exception("Falha ao registrar a contratação.");
+                return ErrosApplication.ResultadoContratacaoFalhou;
             }
+
+            return ResultadoOperacao.Sucesso();
         }
     }
 }
