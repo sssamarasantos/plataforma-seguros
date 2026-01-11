@@ -1,5 +1,6 @@
-﻿using SeguroProposta.Domain.Enums;
-using SeguroProposta.Domain.Exceptions;
+﻿using SeguroProposta.Domain.Common;
+using SeguroProposta.Domain.Enums;
+using SeguroProposta.Domain.ValueObjects;
 
 namespace SeguroProposta.Domain.Models
 {
@@ -13,10 +14,16 @@ namespace SeguroProposta.Domain.Models
         public DateTime DataHoraInclusao { get; private set; }
         public decimal ValorPremio { get; private set; }
         public decimal ValorCobertura { get; private set; }
+        public string EmailContratante { get; private set; } = string.Empty;
 
         protected Proposta() { }
 
-        private Proposta(string titulo, string descricao, decimal valorPremio, decimal valorCobertura)
+        private Proposta(
+            string titulo,
+            string descricao,
+            decimal valorPremio,
+            decimal valorCobertura,
+            Email emailContratante)
         {
             NumeroProposta = ValueObjects.NumeroProposta.Gerar();
             Status = StatusProposta.EmAnalise;
@@ -25,62 +32,102 @@ namespace SeguroProposta.Domain.Models
             Descricao = descricao;
             ValorPremio = valorPremio;
             ValorCobertura = valorCobertura;
+            EmailContratante = emailContratante;
         }
 
-        public static Proposta Criar(string titulo, string descricao, decimal valorPremio, decimal valorCobertura)
+        public static ResultadoOperacao<Proposta> Criar(
+            string titulo,
+            string descricao,
+            decimal valorPremio,
+            decimal valorCobertura,
+            string emailContratante)
         {
-            ValidarTitulo(titulo);
-            ValidarDescricao(descricao);
-            ValidarValorPremio(valorPremio);
-            ValidarValorCobertura(valorPremio, valorCobertura);
+            var resultadoTitulo = ValidarTitulo(titulo);
+            if (resultadoTitulo.EhFalha)
+                return ResultadoOperacao.Falha<Proposta>(resultadoTitulo.Erro!);
 
-            return new Proposta(titulo, descricao, valorPremio, valorCobertura);
+            var resultadoDescricao = ValidarDescricao(descricao);
+            if (resultadoDescricao.EhFalha)
+                return ResultadoOperacao.Falha<Proposta>(resultadoDescricao.Erro!);
+
+            var resultadoValorPremio = ValidarValorPremio(valorPremio);
+            if (resultadoValorPremio.EhFalha)
+                return ResultadoOperacao.Falha<Proposta>(resultadoValorPremio.Erro!);
+
+            var resultadoValorCobertura = ValidarValorCobertura(valorPremio, valorCobertura);
+            if (resultadoValorCobertura.EhFalha)
+                return ResultadoOperacao.Falha<Proposta>(resultadoValorCobertura.Erro!);
+
+            var resultadoEmail = Email.Criar(emailContratante);
+            if (resultadoEmail.EhFalha)
+                return ResultadoOperacao.Falha<Proposta>(resultadoEmail.Erro!);
+
+            return new Proposta(
+                titulo,
+                descricao,
+                valorPremio,
+                valorCobertura,
+                resultadoEmail.Valor);
         }
 
-        public void AlterarStatus(StatusProposta novoStatus)
+        public ResultadoOperacao AlterarStatus(StatusProposta novoStatus)
         {
             if (novoStatus == Status)
-                throw new RegraDeNegocioException("Status igual ao atual.");
+                return ErrosDomain.StatusIgualAtual;
 
-            ValidarTransicaoDeStatus(novoStatus);
+            var resultadoTransicao = ValidarTransicaoDeStatus(novoStatus);
+            if (resultadoTransicao.EhFalha)
+                return resultadoTransicao;
 
             Status = novoStatus;
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private static void ValidarTitulo(string titulo)
+        private static ResultadoOperacao ValidarTitulo(string titulo)
         {
             if (string.IsNullOrWhiteSpace(titulo))
-                throw new PropostaInvalidaException("Título é obrigatório.");
+                return ErrosDomain.TituloObrigatorio;
 
             if (titulo.Length > 100)
-                throw new PropostaInvalidaException("Título não pode exceder 100 caracteres.");
+                return ErrosDomain.TituloExcedeTamanhoMaximo;
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private static void ValidarDescricao(string descricao)
+        private static ResultadoOperacao ValidarDescricao(string descricao)
         {
             if (string.IsNullOrWhiteSpace(descricao))
-                throw new PropostaInvalidaException("Descrição é obrigatória.");
+                return ErrosDomain.DescricaoObrigatoria;
 
             if (descricao.Length > 255)
-                throw new PropostaInvalidaException("Descrição não pode exceder 255 caracteres.");
+                return ErrosDomain.DescricaoExcedeTamanhoMaximo;
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private static void ValidarValorPremio(decimal valor)
+        private static ResultadoOperacao ValidarValorPremio(decimal valor)
         {
             if (valor <= 0)
-                throw new PropostaInvalidaException("Valor do prêmio deve ser maior que zero.");
+                return ErrosDomain.ValorPremioInvalido;
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private static void ValidarValorCobertura(decimal valorPremio, decimal valorCobertura)
+        private static ResultadoOperacao ValidarValorCobertura(decimal valorPremio, decimal valorCobertura)
         {
             if (valorCobertura <= valorPremio)
-                throw new PropostaInvalidaException("Valor da cobertura deve ser maior que o prêmio.");
+                return ErrosDomain.ValorCoberturaInvalido;
+
+            return ResultadoOperacao.Sucesso();
         }
 
-        private void ValidarTransicaoDeStatus(StatusProposta novoStatus)
+        private ResultadoOperacao ValidarTransicaoDeStatus(StatusProposta novoStatus)
         {
             if (Status == StatusProposta.Aprovada && novoStatus == StatusProposta.EmAnalise)
-                throw new RegraDeNegocioException("Não é possível retornar uma proposta aprovada para análise.");
+                return ErrosDomain.TransicaoStatusInvalida;
+
+            return ResultadoOperacao.Sucesso();
         }
     }
 }

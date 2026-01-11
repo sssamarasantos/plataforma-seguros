@@ -3,7 +3,6 @@ using SeguroProposta.Application.Dtos;
 using SeguroProposta.Application.DTOs;
 using SeguroProposta.Application.Services;
 using SeguroProposta.Domain.Enums;
-using SeguroProposta.Domain.Exceptions;
 using SeguroProposta.Domain.Interfaces;
 using SeguroProposta.Domain.Models;
 
@@ -29,11 +28,12 @@ namespace SeguroProposta.Test.Application.Services
                 Titulo = "Seguro Auto",
                 Descricao = "Cobertura completa",
                 ValorPremio = 150.0m,
-                ValorCobertura = 50000.0m
+                ValorCobertura = 50000.0m,
+                EmailContratante = "teste@email.com"
             };
 
             _mockRepository.Setup(r => r.InserirAsync(It.IsAny<Proposta>()))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(true);
 
             // Act
             await _service.InserirAsync(dto);
@@ -59,6 +59,33 @@ namespace SeguroProposta.Test.Application.Services
         }
 
         [Fact]
+        public async Task InserirAsync_RetornaFalha_QuandoInsercaoFalha()
+        {
+            // Arrange
+            var dto = new CriaPropostaDTO
+            {
+                Titulo = "Seguro Auto",
+                Descricao = "Cobertura completa",
+                ValorPremio = 150.0m,
+                ValorCobertura = 50000.0m,
+                EmailContratante = "teste@email.com"
+            };
+
+            _mockRepository.Setup(r => r.InserirAsync(It.IsAny<Proposta>()))
+                .ReturnsAsync(false);
+
+            // Act
+            var resultado = await _service.InserirAsync(dto);
+
+            // Assert
+            Assert.True(resultado.EhFalha);
+            Assert.Contains("Erro ao inserir a proposta", resultado.Erro!.Mensagem);
+            _mockRepository.Verify(
+                r => r.InserirAsync(It.IsAny<Proposta>()),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task BuscarTodasAsync_RetornaListaVazia_QuandoNaoExistemPropostas()
         {
             // Arrange
@@ -77,11 +104,10 @@ namespace SeguroProposta.Test.Application.Services
         public async Task BuscarTodasAsync_RetornaPropostas_QuandoExistemDados()
         {
             // Arrange
-            var propostas = new List<Proposta>
-            {
-                Proposta.Criar("Titulo 1", "Descricao 1", 100.0m, 1000.0m),
-                Proposta.Criar("Titulo 2", "Descricao 2", 200.0m, 2000.0m)
-            };
+            var resultadoProposta1 = Proposta.Criar("Titulo 1", "Descricao 1", 100.0m, 1000.0m, "teste1@email.com");
+            var resultadoProposta2 = Proposta.Criar("Titulo 2", "Descricao 2", 200.0m, 2000.0m, "teste2@email.com");
+            
+            var propostas = new List<Proposta> { resultadoProposta1.Valor, resultadoProposta2.Valor };
 
             _mockRepository.Setup(r => r.BuscarTodasAsync())
                 .ReturnsAsync(propostas);
@@ -113,7 +139,8 @@ namespace SeguroProposta.Test.Application.Services
         public async Task BuscarPorIdAsync_RetornaPropostaDTO_QuandoPropostaExiste()
         {
             // Arrange
-            var proposta = Proposta.Criar("Titulo", "Descricao", 100.0m, 1000.0m);
+            var resultadoProposta = Proposta.Criar("Titulo", "Descricao", 100.0m, 1000.0m, "teste@email.com");
+            var proposta = resultadoProposta.Valor;
             var id = 1;
 
             _mockRepository.Setup(r => r.BuscarPorIdAsync(id))
@@ -132,7 +159,8 @@ namespace SeguroProposta.Test.Application.Services
         public async Task AlterarStatusAsync_AtualizaStatus_QuandoPropostaExiste()
         {
             // Arrange
-            var proposta = Proposta.Criar("Titulo", "Descricao", 100.0m, 1000.0m);
+            var resultadoProposta = Proposta.Criar("Titulo", "Descricao", 100.0m, 1000.0m, "teste@email.com");
+            var proposta = resultadoProposta.Valor;
             proposta.Id = 1;
             var dto = new AlteraStatusDTO
             {
@@ -144,7 +172,7 @@ namespace SeguroProposta.Test.Application.Services
                 .ReturnsAsync(proposta);
 
             _mockRepository.Setup(r => r.AtualizaStatusAsync(It.IsAny<int>(), It.IsAny<StatusProposta>()))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(true);
 
             // Act
             await _service.AlterarStatusAsync(dto);
@@ -156,29 +184,6 @@ namespace SeguroProposta.Test.Application.Services
         }
 
         [Fact]
-        public async Task AlterarStatusAsync_LancaInvalidOperationException_QuandoPropostaNaoExiste()
-        {
-            // Arrange
-            var dto = new AlteraStatusDTO
-            {
-                Id = 999,
-                Status = StatusProposta.Aprovada
-            };
-
-            _mockRepository.Setup(r => r.BuscarPorIdAsync(dto.Id))
-                .ReturnsAsync((Proposta?)null);
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.AlterarStatusAsync(dto));
-
-            Assert.Contains("não encontrada", exception.Message);
-            _mockRepository.Verify(
-                r => r.AtualizaStatusAsync(It.IsAny<int>(), It.IsAny<StatusProposta>()),
-                Times.Never);
-        }
-
-        [Fact]
         public async Task AlterarStatusAsync_LancaArgumentNullException_QuandoDtoNulo()
         {
             // Act & Assert
@@ -187,10 +192,41 @@ namespace SeguroProposta.Test.Application.Services
         }
 
         [Fact]
-        public async Task AlterarStatusAsync_LancaRegraDeNegocioException_QuandoMesmoStatus()
+        public async Task AlterarStatusAsync_RetornaErro_QuandoAtualizacaoFalha()
         {
             // Arrange
-            var proposta = Proposta.Criar("Titulo", "Descricao", 100.0m, 1000.0m);
+            var resultadoProposta = Proposta.Criar("Titulo", "Descricao", 100.0m, 1000.0m, "teste@email.com");
+            var proposta = resultadoProposta.Valor;
+            proposta.Id = 1;
+            var dto = new AlteraStatusDTO
+            {
+                Id = 1,
+                Status = StatusProposta.Aprovada
+            };
+
+            _mockRepository.Setup(r => r.BuscarPorIdAsync(dto.Id))
+                .ReturnsAsync(proposta);
+
+            _mockRepository.Setup(r => r.AtualizaStatusAsync(It.IsAny<int>(), It.IsAny<StatusProposta>()))
+                .ReturnsAsync(false);
+
+            // Act
+            var resultado = await _service.AlterarStatusAsync(dto);
+
+            // Assert
+            Assert.True(resultado.EhFalha);
+            Assert.Contains("Erro ao atualizar o status da proposta", resultado.Erro!.Mensagem);
+            _mockRepository.Verify(
+                r => r.AtualizaStatusAsync(dto.Id, StatusProposta.Aprovada),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task AlterarStatusAsync_RetornaErro_QuandoMesmoStatus()
+        {
+            // Arrange
+            var resultadoProposta = Proposta.Criar("Titulo", "Descricao", 100.0m, 1000.0m, "teste@email.com");
+            var proposta = resultadoProposta.Valor;
             var dto = new AlteraStatusDTO
             {
                 Id = 1,
@@ -200,9 +236,12 @@ namespace SeguroProposta.Test.Application.Services
             _mockRepository.Setup(r => r.BuscarPorIdAsync(dto.Id))
                 .ReturnsAsync(proposta);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<RegraDeNegocioException>(
-                () => _service.AlterarStatusAsync(dto));
+            // Act
+            var resultado = await _service.AlterarStatusAsync(dto);
+
+            // Assert
+            Assert.True(resultado.EhFalha);
+            Assert.Contains("Status igual ao atual.", resultado.Erro!.Mensagem);
         }
     }
 }

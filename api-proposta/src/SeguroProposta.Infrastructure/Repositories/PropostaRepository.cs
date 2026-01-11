@@ -17,7 +17,7 @@ namespace SeguroProposta.Infrastructure.Repositories
                 ?? throw new ArgumentNullException(nameof(connectionFactory));
         }
 
-        public async Task InserirAsync(Proposta proposta)
+        public async Task<bool> InserirAsync(Proposta proposta)
         {
             ArgumentNullException.ThrowIfNull(proposta);
 
@@ -29,7 +29,8 @@ namespace SeguroProposta.Infrastructure.Repositories
                     , DESCRICAO 
                     , DATAHORA_INCLUSAO         
                     , VALOR_PREMIO
-                    , VALOR_COBERTURA)
+                    , VALOR_COBERTURA
+                    , EMAIL_CONTRATANTE)
                 VALUES (
                     @NumeroProposta
                     , @Status
@@ -37,7 +38,8 @@ namespace SeguroProposta.Infrastructure.Repositories
                     , @Descricao
                     , @DataHoraInclusao
                     , @ValorPremio
-                    , @ValorCobertura)";
+                    , @ValorCobertura
+                    , @EmailContratante)";
 
             var parametros = new DynamicParameters();
             parametros.Add("@NumeroProposta", proposta.NumeroProposta, DbType.String, size: 30);
@@ -47,10 +49,13 @@ namespace SeguroProposta.Infrastructure.Repositories
             parametros.Add("@DataHoraInclusao", proposta.DataHoraInclusao, dbType: DbType.DateTime2);
             parametros.Add("@ValorPremio", proposta.ValorPremio, DbType.Decimal);
             parametros.Add("@ValorCobertura", proposta.ValorCobertura, DbType.Decimal);
+            parametros.Add("@EmailContratante", proposta.EmailContratante, DbType.String, size: 100);
 
             using var connection = _connectionFactory.CreateConnection();
 
-            await connection.ExecuteAsync(query, param: parametros, commandType: CommandType.Text);
+            var rowsAffected = await connection.ExecuteAsync(query, param: parametros, commandType: CommandType.Text);
+            
+            return rowsAffected > 0;
         }
 
         public async Task<IEnumerable<Proposta>> BuscarTodasAsync()
@@ -64,6 +69,7 @@ namespace SeguroProposta.Infrastructure.Repositories
                     , DATAHORA_INCLUSAO as DataHoraInclusao
                     , VALOR_PREMIO as ValorPremio
                     , VALOR_COBERTURA as ValorCobertura
+                    , EMAIL_CONTRATANTE as EmailContratante
                 FROM PROPOSTA";
 
             using var connection = _connectionFactory.CreateConnection();
@@ -81,9 +87,10 @@ namespace SeguroProposta.Infrastructure.Repositories
                     , STATUS as Status
                     , TITULO as Titulo
                     , DESCRICAO as Descricao
-                    , DATAHORA_INCLUSAO as DataInclusao
+                    , DATAHORA_INCLUSAO as DataHoraInclusao
                     , VALOR_PREMIO as ValorPremio
-                    , VALOR_COBERTURA as ValorCobertura 
+                    , VALOR_COBERTURA as ValorCobertura
+                    , EMAIL_CONTRATANTE as EmailContratante
                 FROM PROPOSTA 
                 WHERE ID = @Id";
             
@@ -96,7 +103,7 @@ namespace SeguroProposta.Infrastructure.Repositories
             return proposta;
         }
 
-        public async Task AtualizaStatusAsync(int id, StatusProposta statusProposta)
+        public async Task<bool> AtualizaStatusAsync(int id, StatusProposta statusProposta)
         {
             const string query = "UPDATE PROPOSTA SET STATUS = @Status WHERE ID = @Id";
 
@@ -106,7 +113,9 @@ namespace SeguroProposta.Infrastructure.Repositories
 
             using var connection = _connectionFactory.CreateConnection();
 
-            await connection.ExecuteAsync(query, parametros, commandType: CommandType.Text);
+            var rowsAffected = await connection.ExecuteAsync(query, parametros, commandType: CommandType.Text);
+            
+            return rowsAffected > 0;
         }
     }
 }

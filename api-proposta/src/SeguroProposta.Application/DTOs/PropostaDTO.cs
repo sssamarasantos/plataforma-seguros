@@ -12,5 +12,6 @@ namespace SeguroProposta.Application.DTOs
         public DateTime DataHoraInclusao { get; set; }
         public decimal ValorPremio { get; set; }
         public decimal ValorCobertura { get; set; }
+        public required string EmailContratante { get; set; }
     }
 }

@@ -1,21 +1,18 @@
 using SeguroProposta.Application.DTOs;
+using SeguroProposta.Domain.Common;
 using SeguroProposta.Domain.Models;
 
 namespace SeguroProposta.Application.Mappers
 {
     public static class PropostaMapper
     {
-        public static Proposta ToDomain(this CriaPropostaDTO dto)
+        public static ResultadoOperacao<Proposta> ToDomain(this CriaPropostaDTO dto)
         {
-            ArgumentNullException.ThrowIfNull(dto);
-            // Use o método de fábrica público estático Proposta.Criar em vez do construtor inacessível
-            return Proposta.Criar(dto.Titulo, dto.Descricao, dto.ValorPremio, dto.ValorCobertura);
+            return Proposta.Criar(dto.Titulo, dto.Descricao, dto.ValorPremio, dto.ValorCobertura, dto.EmailContratante);
         }
 
         public static PropostaDTO ToDTO(this Proposta proposta)
         {
-            ArgumentNullException.ThrowIfNull(proposta);
-
             return new PropostaDTO
             {
                 Id = proposta.Id,
@@ -25,7 +22,8 @@ namespace SeguroProposta.Application.Mappers
                 Titulo = proposta.Titulo,
                 Descricao = proposta.Descricao,
                 ValorPremio = proposta.ValorPremio,
-                ValorCobertura = proposta.ValorCobertura
+                ValorCobertura = proposta.ValorCobertura,
+                EmailContratante = proposta.EmailContratante
             };
         }
     }

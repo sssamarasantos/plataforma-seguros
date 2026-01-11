@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SeguroProposta.Api.Common;
 using SeguroProposta.Application.Dtos;
 using SeguroProposta.Application.DTOs;
 using SeguroProposta.Application.Interfaces;
@@ -52,10 +53,12 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <returns>Retorna uma resposta HTTP 201 Created se for criado com sucesso</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> Inserir(CriaPropostaDTO proposta)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<OperacaoActionResult> Inserir([FromBody] CriaPropostaDTO proposta)
         {
-            await _propostaService.InserirAsync(proposta);
-            return Created();
+            var resultado = await _propostaService.InserirAsync(proposta);
+            return resultado;
         }
 
         /// <summary>
@@ -65,10 +68,13 @@ namespace SeguroProposta.Api.Controllers.v1
         /// <returns>Retorna uma resposta HTTP 200 OK se o status for atualizado com sucesso</returns>
         [HttpPatch]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> AlterarStatus(AlteraStatusDTO alteraStatusDTO)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        public async Task<OperacaoActionResult> AlterarStatus([FromBody] AlteraStatusDTO alteraStatusDTO)
         {
-            await _propostaService.AlterarStatusAsync(alteraStatusDTO);
-            return Ok();
+            var resultado = await _propostaService.AlterarStatusAsync(alteraStatusDTO);
+            return resultado;
         }
     }
 }

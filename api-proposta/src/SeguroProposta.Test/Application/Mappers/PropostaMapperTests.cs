@@ -11,7 +11,8 @@ namespace SeguroProposta.Test.Application.Mappers
         public void ToDTO_ConverteCorretamente_QuandoPropostaValida()
         {
             // Arrange
-            var proposta = Proposta.Criar("Seguro Residencial", "Cobertura básica", 50.0m, 10000.0m);
+            var resultadoProposta = Proposta.Criar("Seguro Residencial", "Cobertura básica", 50.0m, 10000.0m, "teste@email.com");
+            var proposta = resultadoProposta.Valor;
 
             // Act
             var dto = proposta.ToDTO();
@@ -29,16 +30,6 @@ namespace SeguroProposta.Test.Application.Mappers
         }
 
         [Fact]
-        public void ToDTO_LancaArgumentNullException_QuandoPropostaNula()
-        {
-            // Arrange
-            Proposta? proposta = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => proposta!.ToDTO());
-        }
-
-        [Fact]
         public void ToDomain_ConverteCorretamente_QuandoDTOValido()
         {
             // Arrange
@@ -47,30 +38,22 @@ namespace SeguroProposta.Test.Application.Mappers
                 Titulo = "Seguro Vida",
                 Descricao = "Cobertura total",
                 ValorPremio = 200.0m,
-                ValorCobertura = 100000.0m
+                ValorCobertura = 100000.0m,
+                EmailContratante = "teste@email.com"
             };
 
             // Act
-            var proposta = dto.ToDomain();
+            var resultado = dto.ToDomain();
 
             // Assert
-            Assert.NotNull(proposta);
-            Assert.Equal(dto.Titulo, proposta.Titulo);
-            Assert.Equal(dto.Descricao, proposta.Descricao);
-            Assert.Equal(dto.ValorPremio, proposta.ValorPremio);
-            Assert.Equal(dto.ValorCobertura, proposta.ValorCobertura);
-            Assert.Equal(StatusProposta.EmAnalise, proposta.Status);
-            Assert.False(string.IsNullOrWhiteSpace(proposta.NumeroProposta));
-        }
-
-        [Fact]
-        public void ToDomain_LancaArgumentNullException_QuandoDTONulo()
-        {
-            // Arrange
-            CriaPropostaDTO? dto = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => dto!.ToDomain());
+            Assert.True(resultado.EhSucesso);
+            Assert.NotNull(resultado.Valor);
+            Assert.Equal(dto.Titulo, resultado.Valor.Titulo);
+            Assert.Equal(dto.Descricao, resultado.Valor.Descricao);
+            Assert.Equal(dto.ValorPremio, resultado.Valor.ValorPremio);
+            Assert.Equal(dto.ValorCobertura, resultado.Valor.ValorCobertura);
+            Assert.Equal(StatusProposta.EmAnalise, resultado.Valor.Status);
+            Assert.False(string.IsNullOrWhiteSpace(resultado.Valor.NumeroProposta));
         }
     }
 }

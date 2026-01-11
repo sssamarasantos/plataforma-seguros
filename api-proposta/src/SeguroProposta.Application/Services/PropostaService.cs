@@ -1,7 +1,9 @@
-﻿using SeguroProposta.Application.Dtos;
+﻿using SeguroProposta.Application.Common;
+using SeguroProposta.Application.Dtos;
 using SeguroProposta.Application.DTOs;
 using SeguroProposta.Application.Interfaces;
 using SeguroProposta.Application.Mappers;
+using SeguroProposta.Domain.Common;
 using SeguroProposta.Domain.Interfaces;
 
 namespace SeguroProposta.Application.Services
@@ -19,7 +21,6 @@ namespace SeguroProposta.Application.Services
         public async Task<IEnumerable<PropostaDTO>> BuscarTodasAsync()
         {
             var propostas = await _propostaRepository.BuscarTodasAsync();
-
             return propostas.Select(p => p.ToDTO());
         }
 
@@ -29,29 +30,46 @@ namespace SeguroProposta.Application.Services
             return proposta?.ToDTO();
         }
 
-        public async Task InserirAsync(CriaPropostaDTO propostaDto)
+        public async Task<ResultadoOperacao> InserirAsync(CriaPropostaDTO propostaDto)
         {
             ArgumentNullException.ThrowIfNull(propostaDto);
 
-            var proposta = propostaDto.ToDomain();
+            var resultadoCriacao = propostaDto.ToDomain();
+            if (resultadoCriacao.EhFalha)
+            {
+                return resultadoCriacao.Erro!;
+            }
 
-            await _propostaRepository.InserirAsync(proposta);
+            var proposta = resultadoCriacao.Valor;
+
+            var sucesso = await _propostaRepository.InserirAsync(proposta);
+
+            return !sucesso
+                ? ErrosApplication.InserirPropostaFalhou 
+                : ResultadoOperacao.Sucesso();
         }
 
-        public async Task AlterarStatusAsync(AlteraStatusDTO alteraStatusDto)
+        public async Task<ResultadoOperacao> AlterarStatusAsync(AlteraStatusDTO alteraStatusDto)
         {
             ArgumentNullException.ThrowIfNull(alteraStatusDto);
 
             var proposta = await _propostaRepository.BuscarPorIdAsync(alteraStatusDto.Id);
-
             if (proposta is null)
             {
-                throw new InvalidOperationException($"Proposta com número {alteraStatusDto.Id} não encontrada.");
+                return ErrosApplication.PropostaNaoEncontrada(alteraStatusDto.Id);
             }
 
-            proposta.AlterarStatus(alteraStatusDto.Status);
+            var alterarStatus = proposta.AlterarStatus(alteraStatusDto.Status);
+            if (alterarStatus.EhFalha)
+            {
+                return alterarStatus.Erro!;
+            }
 
-            await _propostaRepository.AtualizaStatusAsync(proposta.Id, proposta.Status);
+            var sucesso = await _propostaRepository.AtualizaStatusAsync(proposta.Id, proposta.Status);
+
+            return !sucesso
+                ? ErrosApplication.AtualizarPropostaFalhou(alteraStatusDto.Id)
+                : ResultadoOperacao.Sucesso();
         }
     }
 }

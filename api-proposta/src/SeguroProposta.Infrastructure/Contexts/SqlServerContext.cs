@@ -21,7 +21,7 @@ namespace SeguroProposta.Infrastructure.Contexts
         {
             var connection = new SqlConnection(_connectionString);
             connection.Open();
-            return connection; // o chamador deve dar Dispose()
+            return connection;
         }
     }
 }
