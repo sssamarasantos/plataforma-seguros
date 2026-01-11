@@ -4,6 +4,6 @@ namespace SeguroContratacao.Domain.Interfaces
 {
     public interface IContratacaoRepository
     {
-        Task<int> InserirAsync(Contratacao contratacao);
+        Task<bool> InserirAsync(Contratacao contratacao);
     }
 }

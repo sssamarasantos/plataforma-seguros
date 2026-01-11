@@ -13,15 +13,17 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 123;
             var valorPremio = 500.00m;
             var valorCobertura = 10000.00m;
+            var emailContratante = "contratante@email.com";
 
             // Act
-            var contratacao = Contratacao.Criar(idProposta, valorPremio, valorCobertura);
+            var contratacao = Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante);
 
             // Assert
             Assert.NotNull(contratacao);
             Assert.Equal(idProposta, contratacao.IdProposta);
             Assert.Equal(valorPremio, contratacao.ValorPremioFinal);
             Assert.Equal(valorCobertura, contratacao.ValorCoberturaFinal);
+            Assert.Equal(emailContratante, contratacao.EmailContratante);
             Assert.NotEmpty(contratacao.NumeroApolice);
             Assert.True(contratacao.DataHoraContratacao <= DateTime.UtcNow);
             Assert.True(contratacao.DataHoraContratacao >= DateTime.UtcNow.AddSeconds(-1));
@@ -34,10 +36,11 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 0;
             var valorPremio = 500.00m;
             var valorCobertura = 10000.00m;
+            var emailContratante = "contratante@email.com";
 
             // Act & Assert
             var exception = Assert.Throws<ContratacaoInvalidaException>(() =>
-                Contratacao.Criar(idProposta, valorPremio, valorCobertura));
+                Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante));
 
             Assert.Equal("O ID da proposta não pode ser zero.", exception.Message);
         }
@@ -49,10 +52,11 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 123;
             var valorPremio = 0m;
             var valorCobertura = 10000.00m;
+            var emailContratante = "contratante@email.com";
 
             // Act & Assert
             var exception = Assert.Throws<ContratacaoInvalidaException>(() =>
-                Contratacao.Criar(idProposta, valorPremio, valorCobertura));
+                Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante));
 
             Assert.Equal("Valor do prêmio deve ser maior que zero.", exception.Message);
         }
@@ -64,10 +68,11 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 123;
             var valorPremio = -100.00m;
             var valorCobertura = 10000.00m;
+            var emailContratante = "contratante@email.com";
 
             // Act & Assert
             var exception = Assert.Throws<ContratacaoInvalidaException>(() =>
-                Contratacao.Criar(idProposta, valorPremio, valorCobertura));
+                Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante));
 
             Assert.Equal("Valor do prêmio deve ser maior que zero.", exception.Message);
         }
@@ -79,10 +84,11 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 123;
             var valorPremio = 10000.00m;
             var valorCobertura = 500.00m;
+            var emailContratante = "contratante@email.com";
 
             // Act & Assert
             var exception = Assert.Throws<ContratacaoInvalidaException>(() =>
-                Contratacao.Criar(idProposta, valorPremio, valorCobertura));
+                Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante));
 
             Assert.Equal("Valor da cobertura deve ser maior que o prêmio.", exception.Message);
         }
@@ -94,10 +100,11 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 123;
             var valorPremio = 10000.00m;
             var valorCobertura = 10000.00m;
+            var emailContratante = "contratante@email.com";
 
             // Act & Assert
             var exception = Assert.Throws<ContratacaoInvalidaException>(() =>
-                Contratacao.Criar(idProposta, valorPremio, valorCobertura));
+                Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante));
 
             Assert.Equal("Valor da cobertura deve ser maior que o prêmio.", exception.Message);
         }
@@ -146,10 +153,11 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 123;
             var valorPremio = 500.00m;
             var valorCobertura = 10000.00m;
+            var emailContratante = "contratante@email.com";
 
             // Act
-            var contratacao1 = Contratacao.Criar(idProposta, valorPremio, valorCobertura);
-            var contratacao2 = Contratacao.Criar(idProposta, valorPremio, valorCobertura);
+            var contratacao1 = Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante);
+            var contratacao2 = Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante);
 
             // Assert
             Assert.NotEqual(contratacao1.NumeroApolice, contratacao2.NumeroApolice);
@@ -162,10 +170,11 @@ namespace SeguroContratacao.Test.Domain.Models
             var idProposta = 123;
             var valorPremio = 500.00m;
             var valorCobertura = 10000.00m;
+            var emailContratante = "contratante@email.com";
             var dataAntesExecucao = DateTime.UtcNow;
 
             // Act
-            var contratacao = Contratacao.Criar(idProposta, valorPremio, valorCobertura);
+            var contratacao = Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante);
             var dataAposExecucao = DateTime.UtcNow;
 
             // Assert
@@ -182,14 +191,18 @@ namespace SeguroContratacao.Test.Domain.Models
             decimal valorPremio, 
             decimal valorCobertura)
         {
+            // Arrange
+            var emailContratante = "contratante@email.com";
+
             // Act
-            var contratacao = Contratacao.Criar(idProposta, valorPremio, valorCobertura);
+            var contratacao = Contratacao.Criar(idProposta, valorPremio, valorCobertura, emailContratante);
 
             // Assert
             Assert.NotNull(contratacao);
             Assert.Equal(idProposta, contratacao.IdProposta);
             Assert.Equal(valorPremio, contratacao.ValorPremioFinal);
             Assert.Equal(valorCobertura, contratacao.ValorCoberturaFinal);
+            Assert.Equal(emailContratante, contratacao.EmailContratante);
         }
     }
 }

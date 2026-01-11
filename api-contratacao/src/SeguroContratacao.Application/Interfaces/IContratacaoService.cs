@@ -4,6 +4,6 @@ namespace SeguroContratacao.Application.Interfaces
 {
     public interface IContratacaoService
     {
-        Task<int> ContratarPropostaAsync(ContratacaoDTO contratacaoDto);
+        Task ContratarPropostaAsync(ContratacaoDTO contratacaoDto);
     }
 }

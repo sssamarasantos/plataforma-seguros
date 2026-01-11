@@ -21,11 +21,11 @@ namespace SeguroContratacao.Api.Controllers
         /// <param name="contratacaoDto"></param>
         /// <returns>Retorna o identificador único da contratação.</returns>
         [HttpPost]
-        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> ContratarProposta(ContratacaoDTO contratacaoDto)
         {
-            var id = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
-            return Ok(id);
+            await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
+            return Ok();
         }
     }
 }

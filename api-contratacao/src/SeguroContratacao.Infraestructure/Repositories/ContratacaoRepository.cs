@@ -16,7 +16,7 @@ namespace SeguroContratacao.Infrastructure.Repositories
                 ?? throw new ArgumentNullException(nameof(connectionFactory));
         }
 
-        public async Task<int> InserirAsync(Contratacao contratacao)
+        public async Task<bool> InserirAsync(Contratacao contratacao)
         {
             const string query = @"
                 INSERT INTO CONTRATACAO (
@@ -24,13 +24,15 @@ namespace SeguroContratacao.Infrastructure.Repositories
                     , DATAHORA_CONTRATACAO
                     , ID_PROPOSTA
                     , VALOR_PREMIO_FINAL
-                    , VALOR_COBERTURA_FINAL)
+                    , VALOR_COBERTURA_FINAL
+                    , EMAIL_CONTRATANTE)
                 VALUES (
                     @NumeroApolice
                     , @DataHoraContratacao
                     , @IdProposta
                     , @ValorPremioFinal
-                    , @valorCoberturaFinal)";
+                    , @valorCoberturaFinal
+                    , @EmailContratante)";
 
             var parametros = new DynamicParameters();
             parametros.Add("@NumeroApolice", contratacao.NumeroApolice, DbType.String, size: 30);
@@ -38,12 +40,13 @@ namespace SeguroContratacao.Infrastructure.Repositories
             parametros.Add("@IdProposta", contratacao.IdProposta, DbType.Int32);
             parametros.Add("@ValorPremioFinal", contratacao.ValorPremioFinal, DbType.Decimal);
             parametros.Add("@ValorCoberturaFinal", contratacao.ValorCoberturaFinal, DbType.Decimal);
+            parametros.Add("@EmailContratante", contratacao.EmailContratante, DbType.String, size: 100);
 
             using var conexao = _connectionFactory.CreateConnection();
 
-            var id = await conexao.ExecuteAsync(query, parametros, commandType: CommandType.Text);
+            var linhasAfetadas = await conexao.ExecuteAsync(query, parametros, commandType: CommandType.Text);
 
-            return id;
+            return linhasAfetadas > 0;
         }
     }
 }

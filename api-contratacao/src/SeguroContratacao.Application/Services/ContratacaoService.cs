@@ -16,7 +16,7 @@ namespace SeguroContratacao.Application.Services
             _propostaApi = propostaApi;
         }
 
-        public async Task<int> ContratarPropostaAsync(ContratacaoDTO contratacaoDto)
+        public async Task ContratarPropostaAsync(ContratacaoDTO contratacaoDto)
         {
             var proposta = await _propostaApi.ObterPropostaPorIdAsync(contratacaoDto.IdProposta);
 
@@ -25,11 +25,15 @@ namespace SeguroContratacao.Application.Services
             var novaContratacao = Contratacao.Criar(
                 contratacaoDto.IdProposta,
                 contratacaoDto.ValorPremioFinal,
-                contratacaoDto.ValorCoberturaFinal
+                contratacaoDto.ValorCoberturaFinal,
+                proposta.EmailContratante
             );
 
-            var id = await _contratacaoRepository.InserirAsync(novaContratacao);
-            return id;
+            var sucesso = await _contratacaoRepository.InserirAsync(novaContratacao);
+            if (!sucesso)
+            {
+                throw new Exception("Falha ao registrar a contratação.");
+            }
         }
     }
 }

@@ -10,5 +10,8 @@ namespace SeguroContratacao.Infrastructure.DTOs
 
         [JsonPropertyName("status")]
         public StatusProposta Status { get; set; }
+
+        [JsonPropertyName("emailContratante")]
+        public required string EmailContratante { get; set; }
     }
 }

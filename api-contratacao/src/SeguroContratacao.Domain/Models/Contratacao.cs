@@ -17,25 +17,35 @@ namespace SeguroContratacao.Domain.Models
 
         public decimal ValorCoberturaFinal { get; private set; }
 
+        public string EmailContratante { get; private set; } = string.Empty;
+
         protected Contratacao() {}
 
-        private Contratacao(int idProposta, decimal valorPremioFinal, decimal valorCoberturaFinal)
+        private Contratacao(
+            int idProposta, 
+            decimal valorPremioFinal, 
+            decimal valorCoberturaFinal,
+            string emailContratante)
         {
             IdProposta = idProposta;
             NumeroApolice = ValueObjects.NumeroApolice.Gerar();
             DataHoraContratacao = DateTime.UtcNow;
-
             ValorPremioFinal = valorPremioFinal;
             ValorCoberturaFinal = valorCoberturaFinal;
+            EmailContratante = emailContratante;
         }
 
-        public static Contratacao Criar(int idProposta, decimal valorPremioFinal, decimal valorCoberturaFinal)
+        public static Contratacao Criar(
+            int idProposta, 
+            decimal valorPremioFinal, 
+            decimal valorCoberturaFinal,
+            string emailContratante)
         {
             ValidarIdProposta(idProposta);
             ValidarValorPremioFinal(valorPremioFinal);
             ValidarValorCoberturaFinal(valorPremioFinal, valorCoberturaFinal);
 
-            return new Contratacao(idProposta, valorPremioFinal, valorCoberturaFinal);
+            return new Contratacao(idProposta, valorPremioFinal, valorCoberturaFinal, emailContratante);
         }
 
         public static void ValidarStatus(StatusProposta statusProposta)

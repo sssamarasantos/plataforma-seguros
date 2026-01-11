@@ -28,7 +28,7 @@ namespace SeguroContratacao.Infrastructure.Rest
                 throw new InvalidOperationException("Falha ao desserializar a proposta: conteúdo inválido ou vazio.");
             }
 
-            return new Proposta(dto.Id, dto.Status);
+            return new Proposta(dto.Id, dto.Status, dto.EmailContratante);
         }
     }
 }
