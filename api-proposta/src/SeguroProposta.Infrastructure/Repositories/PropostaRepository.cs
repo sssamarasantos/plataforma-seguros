@@ -51,11 +51,11 @@ namespace SeguroProposta.Infrastructure.Repositories
             parametros.Add("@ValorCobertura", proposta.ValorCobertura, DbType.Decimal);
             parametros.Add("@EmailContratante", proposta.EmailContratante, DbType.String, size: 100);
 
-            using var connection = _connectionFactory.CreateConnection();
+            using var conexao = _connectionFactory.CreateConnection();
 
-            var rowsAffected = await connection.ExecuteAsync(query, param: parametros, commandType: CommandType.Text);
+            var linhasAfetadas = await conexao.ExecuteAsync(query, param: parametros, commandType: CommandType.Text);
             
-            return rowsAffected > 0;
+            return linhasAfetadas > 0;
         }
 
         public async Task<IEnumerable<Proposta>> BuscarTodasAsync()
@@ -72,8 +72,8 @@ namespace SeguroProposta.Infrastructure.Repositories
                     , EMAIL_CONTRATANTE as EmailContratante
                 FROM PROPOSTA";
 
-            using var connection = _connectionFactory.CreateConnection();
-            var propostas = await connection.QueryAsync<Proposta>(query, commandType: CommandType.Text);
+            using var conexao = _connectionFactory.CreateConnection();
+            var propostas = await conexao.QueryAsync<Proposta>(query, commandType: CommandType.Text);
 
             return propostas;
         }
@@ -97,9 +97,9 @@ namespace SeguroProposta.Infrastructure.Repositories
             var parametros = new DynamicParameters();
             parametros.Add("@Id", id, DbType.Int32);
             
-            using var connection = _connectionFactory.CreateConnection();
+            using var conexao = _connectionFactory.CreateConnection();
             
-            var proposta = await connection.QueryFirstOrDefaultAsync<Proposta>(query, parametros, commandType: CommandType.Text);
+            var proposta = await conexao.QueryFirstOrDefaultAsync<Proposta>(query, parametros, commandType: CommandType.Text);
             return proposta;
         }
 
@@ -111,11 +111,11 @@ namespace SeguroProposta.Infrastructure.Repositories
             parametros.Add("@Status", statusProposta.ToString(), DbType.String, size: 15);
             parametros.Add("@Id", id, DbType.Int32);
 
-            using var connection = _connectionFactory.CreateConnection();
+            using var conexao = _connectionFactory.CreateConnection();
 
-            var rowsAffected = await connection.ExecuteAsync(query, parametros, commandType: CommandType.Text);
+            var linhasAfetadas = await conexao.ExecuteAsync(query, parametros, commandType: CommandType.Text);
             
-            return rowsAffected > 0;
+            return linhasAfetadas > 0;
         }
     }
 }
