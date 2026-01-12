@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using SeguroContratacao.Domain.Interfaces;
 using SeguroContratacao.Infrastructure.AWS;
 using SeguroContratacao.Infrastructure.Contexts;
@@ -13,22 +14,8 @@ namespace SeguroContratacao.Infrastructure
     {
         public static void AddInfrastructureModuleDependency(this IServiceCollection services)
         {
-            string connectionString;
-            string topicoArn;
+            ConfigurarAWSServices(services, services.BuildServiceProvider().GetRequiredService<IConfiguration>());
 
-            using (var secretsManager = new SecretsManager())
-            {
-                connectionString = secretsManager.ObterAsync("API-CONTRATACAO-CONEXAO").GetAwaiter().GetResult();
-                topicoArn = secretsManager.ObterAsync("API-CONTRATACAO-NOTIFICACAO-TOPICO-SNS").GetAwaiter().GetResult();
-            }
-
-            services.AddSingleton(new DbConnectionStringBuilder
-            {
-                ConnectionString = connectionString
-            });
-
-
-            services.AddSingleton<INotificacaoService>(new SnsNotificacaoService(topicoArn));
 
             services.AddScoped<IDbContextFactory, SqlServerContext>();
             services.AddScoped<IContratacaoRepository, ContratacaoRepository>();
@@ -38,6 +25,44 @@ namespace SeguroContratacao.Infrastructure
             {
                 client.BaseAddress = new Uri("https://localhost:7269");
             });
+        }
+
+        private static void ConfigurarAWSServices(IServiceCollection services, IConfiguration configuration)
+        {
+            string? connectionString = null;
+            string topicoArn;
+
+            try
+            {
+                using (var secretsManager = new SecretsManager())
+                {
+                    connectionString = secretsManager.ObterAsync("API-CONTRATACAO-CONEXAO").GetAwaiter().GetResult();
+                    topicoArn = secretsManager.ObterAsync("API-CONTRATACAO-NOTIFICACAO-TOPICO-SNS").GetAwaiter().GetResult();
+                }
+            }
+            catch (Exception)
+            {
+                connectionString = null;
+            }
+
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                connectionString = configuration.GetConnectionString("DefaultConnection");
+
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    throw new InvalidOperationException(
+                        "Connection string não encontrada. Verifique se o AWS Secrets Manager está acessível, " +
+                        "ou se 'ConnectionStrings:DefaultConnection' está definida no appsettings.json");
+                }
+            }
+
+            services.AddSingleton(s => new DbConnectionStringBuilder
+            {
+                ConnectionString = connectionString
+            });
+
+            services.AddSingleton<INotificacaoService>(new SnsNotificacaoService(topicoArn));
         }
     }
 }
