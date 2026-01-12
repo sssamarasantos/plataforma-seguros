@@ -10,6 +10,9 @@ namespace SeguroContratacao.Infrastructure.AWS
 
         public SecretsManager()
         {
+            // Configura a região globalmente para o AWS SDK
+            AWSConfigs.AWSRegion = "us-east-1";
+            
             var config = new SecretCacheConfiguration
             {
                 CacheItemTTL = 3600, // 1 hora 

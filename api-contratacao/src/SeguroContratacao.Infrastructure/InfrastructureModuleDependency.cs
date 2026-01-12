@@ -18,7 +18,7 @@ namespace SeguroContratacao.Infrastructure
 
             using (var secretsManager = new SecretsManager())
             {
-                connectionString =  secretsManager.ObterAsync("API-CONTRATACAO-CONEXAO").GetAwaiter().GetResult();
+                connectionString = secretsManager.ObterAsync("API-CONTRATACAO-CONEXAO").GetAwaiter().GetResult();
                 topicoArn = secretsManager.ObterAsync("API-CONTRATACAO-NOTIFICACAO-TOPICO-SNS").GetAwaiter().GetResult();
             }
 

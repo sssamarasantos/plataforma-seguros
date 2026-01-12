@@ -7,12 +7,17 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+ENV ASPNETCORE_HTTPS_PORTS=8081;8080
+ENV AWS_REGION=us-east-1
 
 # Esta fase é usada para compilar o projeto de serviço
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["SeguroContratacao.Api/SeguroContratacao.Api.csproj", "SeguroContratacao.Api/"]
+WORKDIR /
+COPY ["src/SeguroContratacao.Api/SeguroContratacao.Api.csproj", "SeguroContratacao.Api/"]
+COPY ["src/SeguroContratacao.Application/SeguroContratacao.Application.csproj", "SeguroContratacao.Application/"]
+COPY ["src/SeguroContratacao.Domain/SeguroContratacao.Domain.csproj", "SeguroContratacao.Domain/"]
+COPY ["src/SeguroContratacao.Infrastructure/SeguroContratacao.Infrastructure.csproj", "SeguroContratacao.Infrastructure/"]
 RUN dotnet restore "./SeguroContratacao.Api/SeguroContratacao.Api.csproj"
 COPY . .
 WORKDIR "/src/SeguroContratacao.Api"
