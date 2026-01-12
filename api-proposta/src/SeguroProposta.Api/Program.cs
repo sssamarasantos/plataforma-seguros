@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddApplicationModuleDependency();
-builder.Services.AddInfrastructureModuleDependency();
+builder.Services.AddInfrastructureModuleDependency(builder.Configuration);
 
 // Método auxiliar para configurar opções JSON compartilhadas
 static void ConfigureJsonOptions(JsonSerializerOptions options)
