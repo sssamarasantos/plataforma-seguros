@@ -1,35 +1,29 @@
-﻿using SeguroContratacao.Application.Common;
-using SeguroContratacao.Application.DTOs;
+﻿using SeguroContratacao.Application.DTOs;
 using SeguroContratacao.Application.Interfaces;
 using SeguroContratacao.Domain.Common;
-using SeguroContratacao.Domain.Interfaces;
 using SeguroContratacao.Domain.Models;
 
 namespace SeguroContratacao.Application.Services
 {
     public class ContratacaoService : IContratacaoService
     {
-        private readonly IContratacaoRepository _contratacaoRepository;
-        private readonly IPropostaApi _propostaApi;
+        private readonly IValidacaoPropostaService _validacaoPropostaService;
+        private readonly IProcessamentoContratacaoService _processamentoContratacaoService;
 
-        public ContratacaoService(IContratacaoRepository contratacaoRepository, IPropostaApi propostaApi)
+        public ContratacaoService(
+            IValidacaoPropostaService validacaoPropostaService,
+            IProcessamentoContratacaoService processamentoContratacaoService)
         {
-            _contratacaoRepository = contratacaoRepository;
-            _propostaApi = propostaApi;
+            _validacaoPropostaService = validacaoPropostaService;
+            _processamentoContratacaoService = processamentoContratacaoService;
         }
 
         public async Task<ResultadoOperacao> ContratarPropostaAsync(ContratacaoDTO contratacaoDto)
         {
-            var resultadoProposta = await _propostaApi.ObterPropostaPorIdAsync(contratacaoDto.IdProposta);
+            var resultadoProposta = await _validacaoPropostaService.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta);
             if (resultadoProposta.EhFalha)
             {
                 return resultadoProposta.Erro!;
-            }
-
-            var validacaoStatus = Contratacao.ValidarStatus(resultadoProposta.Valor.Status);
-            if (validacaoStatus.EhFalha)
-            {
-                return validacaoStatus;
             }
 
             var resultadoContratacao = Contratacao.Criar(
@@ -44,13 +38,7 @@ namespace SeguroContratacao.Application.Services
                 return resultadoContratacao.Erro!;
             }
 
-            var sucesso = await _contratacaoRepository.InserirAsync(resultadoContratacao.Valor);
-            if (!sucesso)
-            {
-                return ErrosApplication.ResultadoContratacaoFalhou;
-            }
-
-            return ResultadoOperacao.Sucesso();
+            return await _processamentoContratacaoService.ProcessarContratacaoAsync(resultadoContratacao.Valor);
         }
     }
 }

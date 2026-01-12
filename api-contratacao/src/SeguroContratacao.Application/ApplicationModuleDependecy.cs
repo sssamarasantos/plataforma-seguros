@@ -9,6 +9,8 @@ namespace SeguroContratacao.Application
         public static void AddApplicationModuleDependecy(this IServiceCollection services)
         {
             services.AddScoped<IContratacaoService, ContratacaoService>();
+            services.AddScoped<IValidacaoPropostaService, ValidacaoPropostaService>();
+            services.AddScoped<IProcessamentoContratacaoService, ProcessamentoContratacaoService>();
         }
     }
 }

@@ -1,26 +1,27 @@
 using Moq;
-using SeguroContratacao.Application.Common;
 using SeguroContratacao.Application.DTOs;
+using SeguroContratacao.Application.Interfaces;
 using SeguroContratacao.Application.Services;
 using SeguroContratacao.Domain.Common;
 using SeguroContratacao.Domain.Enums;
-using SeguroContratacao.Domain.Interfaces;
 using SeguroContratacao.Domain.Models;
-using SeguroContratacao.Infrastructure.Common;
+using SeguroContratacao.Infrastructure.DTOs;
 
 namespace SeguroContratacao.Test.Application.Services
 {
     public class ContratacaoServiceTests
     {
-        private readonly Mock<IContratacaoRepository> _mockContratacaoRepository;
-        private readonly Mock<IPropostaApi> _mockPropostaApi;
+        private readonly Mock<IValidacaoPropostaService> _mockValidacaoPropostaService;
+        private readonly Mock<IProcessamentoContratacaoService> _mockProcessamentoContratacaoService;
         private readonly ContratacaoService _contratacaoService;
 
         public ContratacaoServiceTests()
         {
-            _mockContratacaoRepository = new Mock<IContratacaoRepository>();
-            _mockPropostaApi = new Mock<IPropostaApi>();
-            _contratacaoService = new ContratacaoService(_mockContratacaoRepository.Object, _mockPropostaApi.Object);
+            _mockValidacaoPropostaService = new Mock<IValidacaoPropostaService>();
+            _mockProcessamentoContratacaoService = new Mock<IProcessamentoContratacaoService>();
+            _contratacaoService = new ContratacaoService(
+                _mockValidacaoPropostaService.Object,
+                _mockProcessamentoContratacaoService.Object);
         }
 
         [Fact]
@@ -34,27 +35,32 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 10000.00m
             };
 
-            var proposta = new Proposta(123, StatusProposta.Aprovada, "contratante@email.com");
+            var propostaDto = new PropostaDTO
+            {
+                Id = 123,
+                Status = StatusProposta.Aprovada,
+                EmailContratante = "contratante@email.com"
+            };
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Sucesso(propostaDto));
 
-            _mockContratacaoRepository
-                .Setup(x => x.InserirAsync(It.IsAny<Contratacao>()))
-                .ReturnsAsync(true);
+            _mockProcessamentoContratacaoService
+                .Setup(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()))
+                .ReturnsAsync(ResultadoOperacao.Sucesso());
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhSucesso);
-            _mockPropostaApi.Verify(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta), Times.Once);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.IsAny<Contratacao>()), Times.Once);
+            _mockValidacaoPropostaService.Verify(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta), Times.Once);
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()), Times.Once);
         }
 
         [Fact]
-        public async Task ContratarPropostaAsync_ComStatusAprovada_DeveChamarRepositorio()
+        public async Task ContratarPropostaAsync_ComStatusAprovada_DeveChamarProcessamento()
         {
             // Arrange
             var contratacaoDto = new ContratacaoDTO
@@ -64,26 +70,31 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 5000.00m
             };
 
-            var proposta = new Proposta(456, StatusProposta.Aprovada, "contratante@email.com");
+            var propostaDto = new PropostaDTO
+            {
+                Id = 456,
+                Status = StatusProposta.Aprovada,
+                EmailContratante = "contratante@email.com"
+            };
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Sucesso(propostaDto));
 
-            _mockContratacaoRepository
-                .Setup(x => x.InserirAsync(It.IsAny<Contratacao>()))
-                .ReturnsAsync(true);
+            _mockProcessamentoContratacaoService
+                .Setup(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()))
+                .ReturnsAsync(ResultadoOperacao.Sucesso());
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhSucesso);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.Is<Contratacao>(c =>
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.Is<Contratacao>(c =>
                 c.IdProposta == contratacaoDto.IdProposta &&
                 c.ValorPremioFinal == contratacaoDto.ValorPremioFinal &&
                 c.ValorCoberturaFinal == contratacaoDto.ValorCoberturaFinal &&
-                c.EmailContratante == proposta.EmailContratante
+                c.EmailContratante == propostaDto.EmailContratante
             )), Times.Once);
         }
 
@@ -98,20 +109,20 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 8000.00m
             };
 
-            var proposta = new Proposta(789, StatusProposta.EmAnalise, "contratante@email.com");
+            var erro = new Erro(TipoErro.RegraDeNegocio, "Status inválido");
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Falha<PropostaDTO>(erro));
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhFalha);
-            Assert.Equal(ErrosDomain.TituloObrigatorio.Mensagem, resultado.Erro!.Mensagem);
+            Assert.Equal(erro.Mensagem, resultado.Erro!.Mensagem);
             Assert.Equal(TipoErro.RegraDeNegocio, resultado.Erro.TipoErro);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.IsAny<Contratacao>()), Times.Never);
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()), Times.Never);
         }
 
         [Fact]
@@ -125,24 +136,24 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 12000.00m
             };
 
-            var proposta = new Proposta(321, StatusProposta.Rejeitada, "contratante@email.com");
+            var erro = new Erro(TipoErro.RegraDeNegocio, "Status inválido");
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Falha<PropostaDTO>(erro));
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhFalha);
-            Assert.Equal(ErrosDomain.TituloObrigatorio.Mensagem, resultado.Erro!.Mensagem);
+            Assert.Equal(erro.Mensagem, resultado.Erro!.Mensagem);
             Assert.Equal(TipoErro.RegraDeNegocio, resultado.Erro.TipoErro);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.IsAny<Contratacao>()), Times.Never);
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()), Times.Never);
         }
 
         [Fact]
-        public async Task ContratarPropostaAsync_DeveChamarPropostaApiComIdCorreto()
+        public async Task ContratarPropostaAsync_DeveChamarValidacaoComIdCorreto()
         {
             // Arrange
             var idProposta = 999;
@@ -153,22 +164,27 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 15000.00m
             };
 
-            var proposta = new Proposta(idProposta, StatusProposta.Aprovada, "contratante@email.com");
+            var propostaDto = new PropostaDTO
+            {
+                Id = idProposta,
+                Status = StatusProposta.Aprovada,
+                EmailContratante = "contratante@email.com"
+            };
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(idProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(idProposta))
+                .ReturnsAsync(ResultadoOperacao.Sucesso(propostaDto));
 
-            _mockContratacaoRepository
-                .Setup(x => x.InserirAsync(It.IsAny<Contratacao>()))
-                .ReturnsAsync(true);
+            _mockProcessamentoContratacaoService
+                .Setup(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()))
+                .ReturnsAsync(ResultadoOperacao.Sucesso());
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhSucesso);
-            _mockPropostaApi.Verify(x => x.ObterPropostaPorIdAsync(idProposta), Times.Once);
+            _mockValidacaoPropostaService.Verify(x => x.ValidarPropostaParaContratacaoAsync(idProposta), Times.Once);
         }
 
         [Theory]
@@ -188,22 +204,27 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = valorCobertura
             };
 
-            var proposta = new Proposta(idProposta, StatusProposta.Aprovada, "contratante@email.com");
+            var propostaDto = new PropostaDTO
+            {
+                Id = idProposta,
+                Status = StatusProposta.Aprovada,
+                EmailContratante = "contratante@email.com"
+            };
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(idProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(idProposta))
+                .ReturnsAsync(ResultadoOperacao.Sucesso(propostaDto));
 
-            _mockContratacaoRepository
-                .Setup(x => x.InserirAsync(It.IsAny<Contratacao>()))
-                .ReturnsAsync(true);
+            _mockProcessamentoContratacaoService
+                .Setup(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()))
+                .ReturnsAsync(ResultadoOperacao.Sucesso());
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhSucesso);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.IsAny<Contratacao>()), Times.Once);
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()), Times.Once);
         }
 
         [Fact]
@@ -217,18 +238,20 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 10000.00m
             };
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Falha<Proposta>(ErrosInfrastructure.PropostaNaoEncontrada));
+            var erro = new Erro(TipoErro.NaoEncontrado, "Proposta não encontrada");
+
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Falha<PropostaDTO>(erro));
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhFalha);
-            Assert.Equal(ErrosInfrastructure.PropostaNaoEncontrada.Mensagem, resultado.Erro!.Mensagem);
+            Assert.Equal(erro.Mensagem, resultado.Erro!.Mensagem);
             Assert.Equal(TipoErro.NaoEncontrado, resultado.Erro.TipoErro);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.IsAny<Contratacao>()), Times.Never);
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()), Times.Never);
         }
 
         [Fact]
@@ -242,18 +265,23 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 9500.50m
             };
 
-            var proposta = new Proposta(555, StatusProposta.Aprovada, "contratante@email.com");
+            var propostaDto = new PropostaDTO
+            {
+                Id = 555,
+                Status = StatusProposta.Aprovada,
+                EmailContratante = "contratante@email.com"
+            };
 
             Contratacao? contratacaoCapturada = null;
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Sucesso(propostaDto));
 
-            _mockContratacaoRepository
-                .Setup(x => x.InserirAsync(It.IsAny<Contratacao>()))
+            _mockProcessamentoContratacaoService
+                .Setup(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()))
                 .Callback<Contratacao>(c => contratacaoCapturada = c)
-                .ReturnsAsync(true);
+                .ReturnsAsync(ResultadoOperacao.Sucesso());
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
@@ -264,12 +292,12 @@ namespace SeguroContratacao.Test.Application.Services
             Assert.Equal(contratacaoDto.IdProposta, contratacaoCapturada.IdProposta);
             Assert.Equal(contratacaoDto.ValorPremioFinal, contratacaoCapturada.ValorPremioFinal);
             Assert.Equal(contratacaoDto.ValorCoberturaFinal, contratacaoCapturada.ValorCoberturaFinal);
-            Assert.Equal(proposta.EmailContratante, contratacaoCapturada.EmailContratante);
+            Assert.Equal(propostaDto.EmailContratante, contratacaoCapturada.EmailContratante);
             Assert.NotEmpty(contratacaoCapturada.NumeroApolice);
         }
 
         [Fact]
-        public async Task ContratarPropostaAsync_QuandoRepositorioRetornaFalse_DeveRetornarFalha()
+        public async Task ContratarPropostaAsync_QuandoProcessamentoFalha_DeveRetornarFalha()
         {
             // Arrange
             var contratacaoDto = new ContratacaoDTO
@@ -279,28 +307,35 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 10000.00m
             };
 
-            var proposta = new Proposta(123, StatusProposta.Aprovada, "contratante@email.com");
+            var propostaDto = new PropostaDTO
+            {
+                Id = 123,
+                Status = StatusProposta.Aprovada,
+                EmailContratante = "contratante@email.com"
+            };
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Sucesso(proposta));
+            var erro = new Erro(TipoErro.ErroOperacional, "Erro ao processar contratação");
 
-            _mockContratacaoRepository
-                .Setup(x => x.InserirAsync(It.IsAny<Contratacao>()))
-                .ReturnsAsync(false);
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Sucesso(propostaDto));
+
+            _mockProcessamentoContratacaoService
+                .Setup(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()))
+                .ReturnsAsync(ResultadoOperacao.Falha(erro));
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhFalha);
-            Assert.Equal(ErrosApplication.ResultadoContratacaoFalhou.Mensagem, resultado.Erro!.Mensagem);
+            Assert.Equal(erro.Mensagem, resultado.Erro!.Mensagem);
             Assert.Equal(TipoErro.ErroOperacional, resultado.Erro.TipoErro);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.IsAny<Contratacao>()), Times.Once);
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()), Times.Once);
         }
 
         [Fact]
-        public async Task ContratarPropostaAsync_QuandoApiRetornaErro_DeveRetornarFalha()
+        public async Task ContratarPropostaAsync_QuandoValidacaoFalha_DeveRetornarFalha()
         {
             // Arrange
             var contratacaoDto = new ContratacaoDTO
@@ -310,18 +345,20 @@ namespace SeguroContratacao.Test.Application.Services
                 ValorCoberturaFinal = 10000.00m
             };
 
-            _mockPropostaApi
-                .Setup(x => x.ObterPropostaPorIdAsync(contratacaoDto.IdProposta))
-                .ReturnsAsync(ResultadoOperacao.Falha<Proposta>(ErrosInfrastructure.ErroAoComunicarComApiProposta));
+            var erro = new Erro(TipoErro.ErroOperacional, "Erro ao validar proposta");
+
+            _mockValidacaoPropostaService
+                .Setup(x => x.ValidarPropostaParaContratacaoAsync(contratacaoDto.IdProposta))
+                .ReturnsAsync(ResultadoOperacao.Falha<PropostaDTO>(erro));
 
             // Act
             var resultado = await _contratacaoService.ContratarPropostaAsync(contratacaoDto);
 
             // Assert
             Assert.True(resultado.EhFalha);
-            Assert.Equal(ErrosInfrastructure.ErroAoComunicarComApiProposta.Mensagem, resultado.Erro!.Mensagem);
+            Assert.Equal(erro.Mensagem, resultado.Erro!.Mensagem);
             Assert.Equal(TipoErro.ErroOperacional, resultado.Erro.TipoErro);
-            _mockContratacaoRepository.Verify(x => x.InserirAsync(It.IsAny<Contratacao>()), Times.Never);
+            _mockProcessamentoContratacaoService.Verify(x => x.ProcessarContratacaoAsync(It.IsAny<Contratacao>()), Times.Never);
         }
     }
 }

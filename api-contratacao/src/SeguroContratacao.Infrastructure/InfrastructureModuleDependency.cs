@@ -14,16 +14,21 @@ namespace SeguroContratacao.Infrastructure
         public static void AddInfrastructureModuleDependency(this IServiceCollection services)
         {
             string connectionString;
+            string topicoArn;
 
             using (var secretsManager = new SecretsManager())
             {
                 connectionString =  secretsManager.ObterAsync("API-CONTRATACAO-CONEXAO").GetAwaiter().GetResult();
+                topicoArn = secretsManager.ObterAsync("API-CONTRATACAO-NOTIFICACAO-TOPICO-SNS").GetAwaiter().GetResult();
             }
 
             services.AddSingleton(new DbConnectionStringBuilder
             {
                 ConnectionString = connectionString
             });
+
+
+            services.AddSingleton<INotificacaoService>(new SnsNotificacaoService(topicoArn));
 
             services.AddScoped<IDbContextFactory, SqlServerContext>();
             services.AddScoped<IContratacaoRepository, ContratacaoRepository>();
